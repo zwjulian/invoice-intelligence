@@ -78,7 +78,7 @@ def validate_invoice(invoice: Invoice) -> ValidationResult:
         if len(line_totals) == len(invoice.line_items):
             calculated_subtotal = sum(
                 line_totals,
-                Decimal("0"),
+                Decimal(0),
             )
 
             if differs_more_than_tolerance(
@@ -133,7 +133,7 @@ def validate_invoice(invoice: Invoice) -> ValidationResult:
                 breakdown.vat_amount
                 for breakdown in invoice.vat_breakdown
             ),
-            Decimal("0"),
+            Decimal(0),
         )
 
         if differs_more_than_tolerance(
@@ -155,7 +155,7 @@ def validate_invoice(invoice: Invoice) -> ValidationResult:
             expected_vat = (
                 breakdown.taxable_amount
                 * breakdown.rate
-                / Decimal("100")
+                / Decimal(100)
             )
 
             if differs_more_than_tolerance(
@@ -187,7 +187,7 @@ def validate_invoice(invoice: Invoice) -> ValidationResult:
             Decimal,
             Decimal,
         ] = defaultdict(
-            lambda: Decimal("0")
+            lambda: Decimal(0)
         )
 
         for item in invoice.line_items:

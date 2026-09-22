@@ -9,7 +9,6 @@ from app.services.pdf_service import (
     extract_text_from_pdf,
 )
 
-
 ROOT = Path(__file__).resolve().parent.parent
 
 INVOICE_DIR = (

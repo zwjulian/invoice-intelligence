@@ -3,7 +3,6 @@ from pathlib import Path
 
 import pymupdf
 
-
 ROOT = Path(__file__).resolve().parent.parent
 
 INVOICE_DIR = ROOT / "evaluation" / "invoices"
@@ -485,10 +484,10 @@ def create_pdf(
     lines.extend(
         [
             "",
-            f'Invoice number: '
-            f'{invoice["invoice_number"]}',
-            f'Invoice date: '
-            f'{invoice["invoice_date"]}',
+            (f'Invoice number: '
+            f'{invoice["invoice_number"]}'),
+            (f'Invoice date: '
+            f'{invoice["invoice_date"]}'),
         ]
     )
 

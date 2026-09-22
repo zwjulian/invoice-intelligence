@@ -1,28 +1,24 @@
 from pathlib import Path
 from tempfile import NamedTemporaryFile
+from typing import Annotated
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 
 from app.core.config import settings
 from app.models.invoice import Invoice
-
 from app.services.llm_service import (
     GeminiInvoiceExtractor,
     InvoiceExtractionError,
 )
-
 from app.services.mock_llm_service import MockInvoiceExtractor
-
 from app.services.pdf_service import (
     PDFExtractionError,
     extract_text_from_pdf,
 )
-
 from app.services.validation_service import (
     ValidationResult,
     validate_invoice,
 )
-
 
 app = FastAPI(
     title="Invoice Intelligence API",
@@ -58,9 +54,8 @@ def health_check() -> dict[str, str | bool]:
     response_model=InvoiceAPIResponse,
 )
 async def extract_invoice(
-    file: UploadFile = File(...)
+    file: Annotated[UploadFile, File()],
 ) -> InvoiceAPIResponse:
-
     if file.content_type != "application/pdf":
         raise HTTPException(
             status_code=400,

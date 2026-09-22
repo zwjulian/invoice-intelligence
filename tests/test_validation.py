@@ -43,7 +43,7 @@ def create_valid_invoice() -> Invoice:
 
         vat_breakdown=[
             VATBreakdown(
-                rate=Decimal("21"),
+                rate=Decimal(21),
                 taxable_amount=Decimal("1990.00"),
                 vat_amount=Decimal("417.90"),
             )
@@ -57,25 +57,25 @@ def create_valid_invoice() -> Invoice:
                     "AI consultancy - "
                     "architecture workshop"
                 ),
-                quantity=Decimal("2"),
+                quantity=Decimal(2),
                 unit_price=Decimal("450.00"),
-                vat_rate=Decimal("21"),
+                vat_rate=Decimal(21),
                 total=Decimal("900.00"),
             ),
             LineItem(
                 description=(
                     "Document extraction prototype"
                 ),
-                quantity=Decimal("8"),
+                quantity=Decimal(8),
                 unit_price=Decimal("95.00"),
-                vat_rate=Decimal("21"),
+                vat_rate=Decimal(21),
                 total=Decimal("760.00"),
             ),
             LineItem(
                 description="Cloud deployment support",
-                quantity=Decimal("3"),
+                quantity=Decimal(3),
                 unit_price=Decimal("110.00"),
-                vat_rate=Decimal("21"),
+                vat_rate=Decimal(21),
                 total=Decimal("330.00"),
             ),
         ],
@@ -105,12 +105,12 @@ def create_mixed_vat_invoice() -> Invoice:
 
         vat_breakdown=[
             VATBreakdown(
-                rate=Decimal("21"),
+                rate=Decimal(21),
                 taxable_amount=Decimal("150.00"),
                 vat_amount=Decimal("31.50"),
             ),
             VATBreakdown(
-                rate=Decimal("9"),
+                rate=Decimal(9),
                 taxable_amount=Decimal("200.00"),
                 vat_amount=Decimal("18.00"),
             ),
@@ -121,23 +121,23 @@ def create_mixed_vat_invoice() -> Invoice:
         line_items=[
             LineItem(
                 description="Software service",
-                quantity=Decimal("1"),
+                quantity=Decimal(1),
                 unit_price=Decimal("100.00"),
-                vat_rate=Decimal("21"),
+                vat_rate=Decimal(21),
                 total=Decimal("100.00"),
             ),
             LineItem(
                 description="Printed publication",
-                quantity=Decimal("2"),
+                quantity=Decimal(2),
                 unit_price=Decimal("100.00"),
-                vat_rate=Decimal("9"),
+                vat_rate=Decimal(9),
                 total=Decimal("200.00"),
             ),
             LineItem(
                 description="Technical support",
-                quantity=Decimal("1"),
+                quantity=Decimal(1),
                 unit_price=Decimal("50.00"),
-                vat_rate=Decimal("21"),
+                vat_rate=Decimal(21),
                 total=Decimal("50.00"),
             ),
         ],
