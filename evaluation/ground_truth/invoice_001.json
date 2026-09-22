@@ -1,0 +1,28 @@
+{
+  "invoice_number": "INV-2026-1001",
+  "invoice_date": "2026-09-01",
+  "due_date": "2026-10-01",
+  "supplier": {
+    "name": "NorthStar Software B.V.",
+    "address": "Zernikepark 12, 9747 AN Groningen, Netherlands",
+    "vat_number": "NL865432109B01"
+  },
+  "customer": {
+    "name": "Data Example B.V.",
+    "address": "Helperpark 100, 9723 ZA Groningen, Netherlands",
+    "vat_number": "NL123456789B01"
+  },
+  "currency": "EUR",
+  "subtotal": "1000.00",
+  "vat_amount": "210.00",
+  "total_amount": "1210.00",
+  "line_items": [
+    {
+      "description": "AI consultancy",
+      "quantity": "5",
+      "unit_price": "200.00",
+      "vat_rate": "21",
+      "total": "1000.00"
+    }
+  ]
+}

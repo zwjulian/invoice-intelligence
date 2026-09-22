@@ -13,7 +13,7 @@ class GeminiInvoiceExtractor:
     def __init__(self) -> None:
         if not settings.gemini_api_key:
             raise InvoiceExtractionError(
-                "GEMINI_API_KEY is required when USE_MOCK_LLM=false."
+                "GEMINI_API_KEY is required when using Gemini."
             )
 
         self.client = genai.Client(
@@ -40,6 +40,16 @@ Rules:
 - Ignore bank account details because they are not part of the requested schema.
 - PDF text extraction can cause neighbouring text to become concatenated.
 - Infer values only when the intended value is clear from context.
+- Extract every invoice line item when possible.
+- Line item totals should represent amounts excluding VAT when that is clear.
+- If the invoice contains a VAT breakdown, extract each VAT rate separately.
+- For each VAT breakdown entry:
+  - rate is the VAT percentage.
+  - taxable_amount is the amount excluding VAT to which that rate applies.
+  - vat_amount is the VAT charged for that rate.
+- If multiple VAT rates such as 9% and 21% are shown, preserve them as
+  separate VAT breakdown entries.
+- Do not combine different VAT rates into one VAT breakdown entry.
 
 Invoice text:
 

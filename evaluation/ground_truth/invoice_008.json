@@ -1,0 +1,35 @@
+{
+  "invoice_number": "MESSY-2026-42",
+  "invoice_date": "2026-09-11",
+  "due_date": "2026-10-11",
+  "supplier": {
+    "name": "Messy Documents B.V.",
+    "address": "Damsterdiep 100, 9713 EL Groningen, Netherlands",
+    "vat_number": "NL454545454B01"
+  },
+  "customer": {
+    "name": "AI Integration B.V.",
+    "address": "Helperpark 44, 9723 ZA Groningen, Netherlands",
+    "vat_number": "NL676767676B01"
+  },
+  "currency": "EUR",
+  "subtotal": "1650.00",
+  "vat_amount": "346.50",
+  "total_amount": "1996.50",
+  "line_items": [
+    {
+      "description": "Document processing",
+      "quantity": "10",
+      "unit_price": "120.00",
+      "vat_rate": "21",
+      "total": "1200.00"
+    },
+    {
+      "description": "Integration work",
+      "quantity": "3",
+      "unit_price": "150.00",
+      "vat_rate": "21",
+      "total": "450.00"
+    }
+  ]
+}

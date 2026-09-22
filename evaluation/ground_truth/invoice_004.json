@@ -1,0 +1,35 @@
+{
+  "invoice_number": "ML-00991",
+  "invoice_date": "2026-06-10",
+  "due_date": "2026-07-10",
+  "supplier": {
+    "name": "Machine Learning Partners B.V.",
+    "address": "Europalaan 31, 3526 KS Utrecht, Netherlands",
+    "vat_number": "NL909090909B01"
+  },
+  "customer": {
+    "name": "Vision Systems B.V.",
+    "address": "Oude Ebbingestraat 50, 9712 HL Groningen, Netherlands",
+    "vat_number": "NL121212121B01"
+  },
+  "currency": "EUR",
+  "subtotal": "2450.00",
+  "vat_amount": "514.50",
+  "total_amount": "2964.50",
+  "line_items": [
+    {
+      "description": "Model development",
+      "quantity": "10",
+      "unit_price": "175.00",
+      "vat_rate": "21",
+      "total": "1750.00"
+    },
+    {
+      "description": "Deployment support",
+      "quantity": "4",
+      "unit_price": "175.00",
+      "vat_rate": "21",
+      "total": "700.00"
+    }
+  ]
+}

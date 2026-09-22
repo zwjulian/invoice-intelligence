@@ -7,92 +7,112 @@ from pydantic import BaseModel, Field
 class Party(BaseModel):
     name: str | None = Field(
         default=None,
-        description="Name of the company or person."
+        description="Name of the company or person.",
     )
 
     address: str | None = Field(
         default=None,
-        description="Full postal address if available."
+        description="Full postal address if available.",
     )
 
     vat_number: str | None = Field(
         default=None,
-        description="VAT identification number if present."
+        description="VAT identification number if present.",
     )
 
 
 class LineItem(BaseModel):
     description: str = Field(
-        description="Description of the billed product or service."
+        description="Description of the billed product or service.",
     )
 
     quantity: Decimal | None = Field(
         default=None,
-        description="Quantity purchased."
+        description="Quantity purchased.",
     )
 
     unit_price: Decimal | None = Field(
         default=None,
-        description="Price per unit excluding VAT if available."
+        description="Price per unit excluding VAT if available.",
     )
 
     vat_rate: Decimal | None = Field(
         default=None,
-        description="VAT percentage, for example 21 for 21 percent VAT."
+        description="VAT percentage, for example 21 for 21 percent VAT.",
     )
 
     total: Decimal | None = Field(
         default=None,
-        description="Total amount for this line excluding VAT if available."
+        description="Total amount for this line excluding VAT if available.",
+    )
+
+
+class VATBreakdown(BaseModel):
+    rate: Decimal = Field(
+        description="VAT percentage, for example 21 for 21 percent VAT.",
+    )
+
+    taxable_amount: Decimal | None = Field(
+        default=None,
+        description="Amount excluding VAT to which this VAT rate applies.",
+    )
+
+    vat_amount: Decimal = Field(
+        description="VAT amount charged at this VAT rate.",
     )
 
 
 class Invoice(BaseModel):
     invoice_number: str | None = Field(
         default=None,
-        description="Unique invoice number."
+        description="Unique invoice number.",
     )
 
     invoice_date: date | None = Field(
         default=None,
-        description="Date the invoice was issued."
+        description="Date the invoice was issued.",
     )
 
     due_date: date | None = Field(
         default=None,
-        description="Payment due date."
+        description="Payment due date.",
     )
 
     supplier: Party = Field(
-        description="Party sending the invoice."
+        description="Party sending the invoice.",
     )
 
     customer: Party | None = Field(
         default=None,
-        description="Party receiving the invoice."
+        description="Party receiving the invoice.",
     )
 
     currency: str | None = Field(
         default=None,
-        description="ISO currency code such as EUR, USD or GBP."
+        description="ISO currency code such as EUR, USD or GBP.",
     )
 
     subtotal: Decimal | None = Field(
         default=None,
-        description="Total amount excluding VAT."
+        description="Total amount excluding VAT.",
     )
 
     vat_amount: Decimal | None = Field(
         default=None,
-        description="Total VAT amount."
+        description="Total VAT amount for the entire invoice.",
+    )
+
+    vat_breakdown: list[VATBreakdown] = Field(
+        default_factory=list,
+        description="VAT totals grouped by VAT rate when available.",
     )
 
     total_amount: Decimal | None = Field(
         default=None,
-        description="Final invoice amount including VAT."
+        description="Final invoice amount including VAT.",
     )
 
     line_items: list[LineItem] = Field(
         default_factory=list,
-        description="Individual products or services on the invoice."
+        description="Individual products or services on the invoice.",
     )

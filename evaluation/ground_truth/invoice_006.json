@@ -1,0 +1,28 @@
+{
+  "invoice_number": "NORTH-006",
+  "invoice_date": "2026-09-20",
+  "due_date": null,
+  "supplier": {
+    "name": "Northern Data Services B.V.",
+    "address": "Peizerweg 97, 9727 AJ Groningen, Netherlands",
+    "vat_number": "NL101010101B01"
+  },
+  "customer": {
+    "name": "Example Logistics B.V.",
+    "address": "Europaweg 12, 9723 AS Groningen, Netherlands",
+    "vat_number": null
+  },
+  "currency": "EUR",
+  "subtotal": "500.00",
+  "vat_amount": "105.00",
+  "total_amount": "605.00",
+  "line_items": [
+    {
+      "description": "Data pipeline maintenance",
+      "quantity": "4",
+      "unit_price": "125.00",
+      "vat_rate": "21",
+      "total": "500.00"
+    }
+  ]
+}

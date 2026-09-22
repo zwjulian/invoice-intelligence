@@ -1,0 +1,35 @@
+{
+  "invoice_number": "DOC-2026-77",
+  "invoice_date": "2026-09-18",
+  "due_date": "2026-10-18",
+  "supplier": {
+    "name": "Document Intelligence B.V.",
+    "address": "Paterswoldseweg 806, 9728 BM Groningen, Netherlands",
+    "vat_number": "NL565656565B01"
+  },
+  "customer": {
+    "name": "Automation Factory B.V.",
+    "address": "Industrieweg 40, 9403 AB Assen, Netherlands",
+    "vat_number": "NL787878787B01"
+  },
+  "currency": "EUR",
+  "subtotal": "1320.00",
+  "vat_amount": "277.20",
+  "total_amount": "1597.20",
+  "line_items": [
+    {
+      "description": "Document extraction prototype",
+      "quantity": "8",
+      "unit_price": "120.00",
+      "vat_rate": "21",
+      "total": "960.00"
+    },
+    {
+      "description": "API integration",
+      "quantity": "3",
+      "unit_price": "120.00",
+      "vat_rate": "21",
+      "total": "360.00"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "invoice_number": "CLOUD-4402",
+  "invoice_date": "2026-07-15",
+  "due_date": "2026-07-29",
+  "supplier": {
+    "name": "CloudWorks Europe B.V.",
+    "address": "Science Park 55, 1098 XH Amsterdam, Netherlands",
+    "vat_number": "NL777888999B01"
+  },
+  "customer": {
+    "name": "Northwind AI B.V.",
+    "address": "Grote Markt 20, 9712 HV Groningen, Netherlands",
+    "vat_number": "NL333222111B01"
+  },
+  "currency": "EUR",
+  "subtotal": "1800.00",
+  "vat_amount": "378.00",
+  "total_amount": "2178.00",
+  "line_items": [
+    {
+      "description": "Cloud hosting",
+      "quantity": "1",
+      "unit_price": "1200.00",
+      "vat_rate": "21",
+      "total": "1200.00"
+    },
+    {
+      "description": "Monitoring support",
+      "quantity": "2",
+      "unit_price": "300.00",
+      "vat_rate": "21",
+      "total": "600.00"
+    }
+  ]
+}

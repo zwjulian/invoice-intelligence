@@ -1,0 +1,42 @@
+{
+  "invoice_number": "US-2026-884",
+  "invoice_date": "2026-09-05",
+  "due_date": "2026-10-05",
+  "supplier": {
+    "name": "Vector Cloud Inc.",
+    "address": "500 Market Street, San Francisco, CA 94105, USA",
+    "vat_number": "US99887766"
+  },
+  "customer": {
+    "name": "European AI Labs B.V.",
+    "address": "Kadijk 22, 9712 AA Groningen, Netherlands",
+    "vat_number": "NL232323232B01"
+  },
+  "currency": "USD",
+  "subtotal": "3250.00",
+  "vat_amount": "682.50",
+  "total_amount": "3932.50",
+  "line_items": [
+    {
+      "description": "GPU compute",
+      "quantity": "10",
+      "unit_price": "200.00",
+      "vat_rate": "21",
+      "total": "2000.00"
+    },
+    {
+      "description": "Object storage",
+      "quantity": "5",
+      "unit_price": "100.00",
+      "vat_rate": "21",
+      "total": "500.00"
+    },
+    {
+      "description": "Technical support",
+      "quantity": "3",
+      "unit_price": "250.00",
+      "vat_rate": "21",
+      "total": "750.00"
+    }
+  ]
+}

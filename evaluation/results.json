@@ -1,0 +1,183 @@
+{
+  "overall_accuracy": 1.0,
+  "field_accuracy": {
+    "invoice_number": 1.0,
+    "invoice_date": 1.0,
+    "due_date": 1.0,
+    "currency": 1.0,
+    "subtotal": 1.0,
+    "vat_amount": 1.0,
+    "total_amount": 1.0,
+    "supplier_name": 1.0,
+    "supplier_vat_number": 1.0,
+    "customer_name": 1.0,
+    "customer_vat_number": 1.0,
+    "line_items": 1.0,
+    "vat_breakdown": 1.0
+  },
+  "invoices": [
+    {
+      "invoice": "invoice_001",
+      "accuracy": 1.0,
+      "fields": {
+        "invoice_number": true,
+        "invoice_date": true,
+        "due_date": true,
+        "currency": true,
+        "subtotal": true,
+        "vat_amount": true,
+        "total_amount": true,
+        "supplier_name": true,
+        "supplier_vat_number": true,
+        "customer_name": true,
+        "customer_vat_number": true,
+        "line_items": true
+      }
+    },
+    {
+      "invoice": "invoice_002",
+      "accuracy": 1.0,
+      "fields": {
+        "invoice_number": true,
+        "invoice_date": true,
+        "due_date": true,
+        "currency": true,
+        "subtotal": true,
+        "vat_amount": true,
+        "total_amount": true,
+        "supplier_name": true,
+        "supplier_vat_number": true,
+        "customer_name": true,
+        "customer_vat_number": true,
+        "line_items": true
+      }
+    },
+    {
+      "invoice": "invoice_003",
+      "accuracy": 1.0,
+      "fields": {
+        "invoice_number": true,
+        "invoice_date": true,
+        "due_date": true,
+        "currency": true,
+        "subtotal": true,
+        "vat_amount": true,
+        "total_amount": true,
+        "supplier_name": true,
+        "supplier_vat_number": true,
+        "customer_name": true,
+        "customer_vat_number": true,
+        "line_items": true
+      }
+    },
+    {
+      "invoice": "invoice_004",
+      "accuracy": 1.0,
+      "fields": {
+        "invoice_number": true,
+        "invoice_date": true,
+        "due_date": true,
+        "currency": true,
+        "subtotal": true,
+        "vat_amount": true,
+        "total_amount": true,
+        "supplier_name": true,
+        "supplier_vat_number": true,
+        "customer_name": true,
+        "customer_vat_number": true,
+        "line_items": true
+      }
+    },
+    {
+      "invoice": "invoice_005",
+      "accuracy": 1.0,
+      "fields": {
+        "invoice_number": true,
+        "invoice_date": true,
+        "due_date": true,
+        "currency": true,
+        "subtotal": true,
+        "vat_amount": true,
+        "total_amount": true,
+        "supplier_name": true,
+        "supplier_vat_number": true,
+        "customer_name": true,
+        "customer_vat_number": true,
+        "line_items": true
+      }
+    },
+    {
+      "invoice": "invoice_006",
+      "accuracy": 1.0,
+      "fields": {
+        "invoice_number": true,
+        "invoice_date": true,
+        "due_date": true,
+        "currency": true,
+        "subtotal": true,
+        "vat_amount": true,
+        "total_amount": true,
+        "supplier_name": true,
+        "supplier_vat_number": true,
+        "customer_name": true,
+        "customer_vat_number": true,
+        "line_items": true
+      }
+    },
+    {
+      "invoice": "invoice_007",
+      "accuracy": 1.0,
+      "fields": {
+        "invoice_number": true,
+        "invoice_date": true,
+        "due_date": true,
+        "currency": true,
+        "subtotal": true,
+        "vat_amount": true,
+        "total_amount": true,
+        "supplier_name": true,
+        "supplier_vat_number": true,
+        "customer_name": true,
+        "customer_vat_number": true,
+        "line_items": true
+      }
+    },
+    {
+      "invoice": "invoice_008",
+      "accuracy": 1.0,
+      "fields": {
+        "invoice_number": true,
+        "invoice_date": true,
+        "due_date": true,
+        "currency": true,
+        "subtotal": true,
+        "vat_amount": true,
+        "total_amount": true,
+        "supplier_name": true,
+        "supplier_vat_number": true,
+        "customer_name": true,
+        "customer_vat_number": true,
+        "line_items": true
+      }
+    },
+    {
+      "invoice": "invoice_009",
+      "accuracy": 1.0,
+      "fields": {
+        "invoice_number": true,
+        "invoice_date": true,
+        "due_date": true,
+        "currency": true,
+        "subtotal": true,
+        "vat_amount": true,
+        "total_amount": true,
+        "supplier_name": true,
+        "supplier_vat_number": true,
+        "customer_name": true,
+        "customer_vat_number": true,
+        "line_items": true,
+        "vat_breakdown": true
+      }
+    }
+  ]
+}
