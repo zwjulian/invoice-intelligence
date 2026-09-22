@@ -2,6 +2,10 @@
 
 
 
+!\[Tests](https://github.com/zwjulian/invoice-intelligence/actions/workflows/tests.yml/badge.svg)
+
+
+
 An LLM-powered document processing API that extracts structured invoice
 
 information from PDF files and validates the extracted data using
