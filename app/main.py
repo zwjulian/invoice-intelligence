@@ -14,6 +14,7 @@ from app.services.mock_llm_service import MockInvoiceExtractor
 from app.services.pdf_service import (
     PDFExtractionError,
     extract_text_from_pdf,
+    render_pdf_pages_as_png,
 )
 from app.services.validation_service import (
     ValidationResult,
@@ -24,14 +25,15 @@ app = FastAPI(
     title="Invoice Intelligence API",
     description=(
         "Extract structured invoice data from PDF files "
-        "using an LLM and validate the extracted information."
+        "using text or multimodal LLM processing."
     ),
-    version="0.1.0",
+    version="0.2.0",
 )
 
 
 class InvoiceAPIResponse(ValidationResult):
     filename: str
+    extraction_method: str
     invoice: Invoice
 
 
@@ -54,7 +56,10 @@ def health_check() -> dict[str, str | bool]:
     response_model=InvoiceAPIResponse,
 )
 async def extract_invoice(
-    file: Annotated[UploadFile, File()],
+    file: Annotated[
+        UploadFile,
+        File(),
+    ],
 ) -> InvoiceAPIResponse:
     if file.content_type != "application/pdf":
         raise HTTPException(
@@ -71,23 +76,52 @@ async def extract_invoice(
             suffix=".pdf",
             delete=False,
         ) as temp_file:
-            temp_file.write(pdf_bytes)
-            temp_path = Path(temp_file.name)
+            temp_file.write(
+                pdf_bytes
+            )
+
+            temp_path = Path(
+                temp_file.name
+            )
 
         invoice_text = extract_text_from_pdf(
             temp_path
         )
 
-        invoice = extractor.extract(
-            invoice_text
-        )
+        if invoice_text.strip():
+            extraction_method = "text"
+
+            invoice = extractor.extract(
+                invoice_text
+            )
+
+        else:
+            extraction_method = "vision"
+
+            page_images = (
+                render_pdf_pages_as_png(
+                    temp_path
+                )
+            )
+
+            invoice = (
+                extractor.extract_from_images(
+                    page_images
+                )
+            )
 
         validation = validate_invoice(
             invoice
         )
 
         return InvoiceAPIResponse(
-            filename=file.filename or "unknown.pdf",
+            filename=(
+                file.filename
+                or "unknown.pdf"
+            ),
+            extraction_method=(
+                extraction_method
+            ),
             invoice=invoice,
             valid=validation.valid,
             warnings=validation.warnings,
