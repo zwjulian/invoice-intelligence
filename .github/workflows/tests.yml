@@ -30,3 +30,7 @@ jobs:
       - name: Run tests
         run: |
           pytest -v
+
+      - name: Build Docker image
+        run: |
+          docker build -t invoice-intelligence .
