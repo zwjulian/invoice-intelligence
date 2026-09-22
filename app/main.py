@@ -13,6 +13,9 @@ from fastapi.responses import HTMLResponse
 
 from app.core.config import settings
 from app.database import init_db
+from app.models.analytics import (
+    AnalyticsSummary,
+)
 from app.models.invoice import Invoice
 from app.models.stored_invoice import (
     InvoiceStatusUpdate,
@@ -32,6 +35,7 @@ from app.services.pdf_service import (
     render_pdf_pages_as_png,
 )
 from app.services.storage_service import (
+    get_analytics_summary,
     get_stored_invoice,
     list_stored_invoices,
     store_invoice,
@@ -45,10 +49,10 @@ from app.services.validation_service import (
 app = FastAPI(
     title="Invoice Intelligence API",
     description=(
-        "Extract, validate, store and manage "
-        "structured invoice information."
+        "Extract, validate, store, manage "
+        "and analyse structured invoice information."
     ),
-    version="0.5.0",
+    version="0.6.0",
 )
 
 
@@ -116,6 +120,14 @@ def health_check() -> dict[
             settings.use_mock_llm
         ),
     }
+
+
+@app.get(
+    "/analytics/summary",
+    response_model=AnalyticsSummary,
+)
+def analytics_summary() -> AnalyticsSummary:
+    return get_analytics_summary()
 
 
 @app.get(
