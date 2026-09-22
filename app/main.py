@@ -10,12 +10,10 @@ from fastapi import (
     UploadFile,
 )
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
-from app.database import init_db
-from app.models.analytics import (
-    AnalyticsSummary,
-)
+from app.models.analytics import AnalyticsSummary
 from app.models.invoice import Invoice
 from app.models.stored_invoice import (
     InvoiceStatusUpdate,
@@ -26,9 +24,7 @@ from app.services.llm_service import (
     GeminiInvoiceExtractor,
     InvoiceExtractionError,
 )
-from app.services.mock_llm_service import (
-    MockInvoiceExtractor,
-)
+from app.services.mock_llm_service import MockInvoiceExtractor
 from app.services.pdf_service import (
     PDFExtractionError,
     extract_text_from_pdf,
@@ -49,17 +45,25 @@ from app.services.validation_service import (
 app = FastAPI(
     title="Invoice Intelligence API",
     description=(
-        "Extract, validate, store, manage "
-        "and analyse structured invoice information."
+        "API for extracting, validating, storing, managing "
+        "and analysing invoice information."
     ),
-    version="0.6.0",
+    version="0.8.0",
 )
 
 
-FRONTEND_PATH = (
+STATIC_PATH = (
     Path(__file__).resolve().parent
     / "static"
-    / "index.html"
+)
+
+
+app.mount(
+    "/static",
+    StaticFiles(
+        directory=STATIC_PATH
+    ),
+    name="static",
 )
 
 
@@ -67,41 +71,29 @@ class InvoiceAPIResponse(
     ValidationResult
 ):
     filename: str
-
     extraction_method: str
-
     invoice: Invoice
-
     database_id: int
-
     duplicate: bool
-
     duplicate_of_id: int | None
 
 
 if settings.use_mock_llm:
-    extractor = (
-        MockInvoiceExtractor()
-    )
+    extractor = MockInvoiceExtractor()
 else:
-    extractor = (
-        GeminiInvoiceExtractor()
+    extractor = GeminiInvoiceExtractor()
+
+
+def read_html(
+    filename: str,
+) -> HTMLResponse:
+    path = (
+        STATIC_PATH
+        / filename
     )
 
-
-init_db()
-
-
-@app.get(
-    "/",
-    response_class=HTMLResponse,
-    include_in_schema=False,
-)
-def frontend() -> HTMLResponse:
-    html = (
-        FRONTEND_PATH.read_text(
-            encoding="utf-8"
-        )
+    html = path.read_text(
+        encoding="utf-8"
     )
 
     return HTMLResponse(
@@ -109,7 +101,55 @@ def frontend() -> HTMLResponse:
     )
 
 
-@app.get("/health")
+@app.get(
+    "/",
+    response_class=HTMLResponse,
+    include_in_schema=False,
+)
+def dashboard() -> HTMLResponse:
+    return read_html(
+        "index.html"
+    )
+
+
+@app.get(
+    "/invoices",
+    response_class=HTMLResponse,
+    include_in_schema=False,
+)
+def invoice_page() -> HTMLResponse:
+    return read_html(
+        "invoices.html"
+    )
+
+
+@app.get(
+    "/invoices/{invoice_id}",
+    response_class=HTMLResponse,
+    include_in_schema=False,
+)
+def invoice_detail_page(
+    invoice_id: int,
+) -> HTMLResponse:
+    return read_html(
+        "invoice_detail.html"
+    )
+
+
+@app.get(
+    "/analytics",
+    response_class=HTMLResponse,
+    include_in_schema=False,
+)
+def analytics_page() -> HTMLResponse:
+    return read_html(
+        "analytics.html"
+    )
+
+
+@app.get(
+    "/api/health"
+)
 def health_check() -> dict[
     str,
     str | bool,
@@ -123,7 +163,7 @@ def health_check() -> dict[
 
 
 @app.get(
-    "/analytics/summary",
+    "/api/analytics/summary",
     response_model=AnalyticsSummary,
 )
 def analytics_summary() -> AnalyticsSummary:
@@ -131,7 +171,7 @@ def analytics_summary() -> AnalyticsSummary:
 
 
 @app.get(
-    "/invoices",
+    "/api/invoices",
     response_model=list[
         StoredInvoiceSummary
     ],
@@ -154,8 +194,7 @@ def invoices(
     )
 
     return [
-        StoredInvoiceSummary
-        .model_validate(
+        StoredInvoiceSummary.model_validate(
             invoice
         )
         for invoice
@@ -164,10 +203,8 @@ def invoices(
 
 
 @app.get(
-    "/invoices/{invoice_id}",
-    response_model=(
-        StoredInvoiceDetail
-    ),
+    "/api/invoices/{invoice_id}",
+    response_model=StoredInvoiceDetail,
 )
 def invoice_detail(
     invoice_id: int,
@@ -181,9 +218,7 @@ def invoice_detail(
     if stored_invoice is None:
         raise HTTPException(
             status_code=404,
-            detail=(
-                "Invoice not found."
-            ),
+            detail="Invoice not found.",
         )
 
     return (
@@ -195,10 +230,8 @@ def invoice_detail(
 
 
 @app.patch(
-    "/invoices/{invoice_id}/status",
-    response_model=(
-        StoredInvoiceSummary
-    ),
+    "/api/invoices/{invoice_id}/status",
+    response_model=StoredInvoiceSummary,
 )
 def change_invoice_status(
     invoice_id: int,
@@ -277,10 +310,8 @@ def change_invoice_status(
 
 
 @app.post(
-    "/invoices/extract",
-    response_model=(
-        InvoiceAPIResponse
-    ),
+    "/api/invoices/extract",
+    response_model=InvoiceAPIResponse,
 )
 async def extract_invoice(
     file: Annotated[
@@ -324,9 +355,7 @@ async def extract_invoice(
         )
 
         if invoice_text.strip():
-            extraction_method = (
-                "text"
-            )
+            extraction_method = "text"
 
             invoice = (
                 extractor.extract(
@@ -335,9 +364,7 @@ async def extract_invoice(
             )
 
         else:
-            extraction_method = (
-                "vision"
-            )
+            extraction_method = "vision"
 
             page_images = (
                 render_pdf_pages_as_png(

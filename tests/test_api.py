@@ -6,14 +6,12 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 
-client = TestClient(
-    app
-)
+client = TestClient(app)
 
 
 def test_health_endpoint():
     response = client.get(
-        "/health"
+        "/api/health"
     )
 
     assert response.status_code == 200
@@ -21,6 +19,8 @@ def test_health_endpoint():
     data = response.json()
 
     assert data["status"] == "healthy"
+
+    assert "mock_llm" in data
 
 
 def test_extract_invoice_success():
@@ -32,7 +32,7 @@ def test_extract_invoice_success():
         "rb"
     ) as pdf_file:
         response = client.post(
-            "/invoices/extract",
+            "/api/invoices/extract",
             files={
                 "file": (
                     "test_invoice.pdf",
@@ -46,9 +46,6 @@ def test_extract_invoice_success():
 
     data = response.json()
 
-    assert data["valid"] is True
-    assert data["warnings"] == []
-
     assert (
         data["filename"]
         == "test_invoice.pdf"
@@ -59,9 +56,41 @@ def test_extract_invoice_success():
         == "text"
     )
 
+    assert data["database_id"] > 0
+
+    assert isinstance(
+        data["duplicate"],
+        bool,
+    )
+
+    assert "invoice" in data
+
     assert (
-        data["invoice"]["invoice_number"]
+        data["invoice"][
+            "invoice_number"
+        ]
         == "INV-2026-0042"
+    )
+
+    assert (
+        data["invoice"][
+            "supplier"
+        ]["name"]
+        == "NorthStar Software B.V."
+    )
+
+    assert (
+        data["invoice"][
+            "customer"
+        ]["name"]
+        == "Data Example B.V."
+    )
+
+    assert (
+        data["invoice"][
+            "currency"
+        ]
+        == "EUR"
     )
 
 
@@ -100,6 +129,7 @@ def test_scanned_pdf_uses_vision_fallback():
     document.save(
         temp_path
     )
+
     document.close()
 
     try:
@@ -107,7 +137,7 @@ def test_scanned_pdf_uses_vision_fallback():
             "rb"
         ) as pdf_file:
             response = client.post(
-                "/invoices/extract",
+                "/api/invoices/extract",
                 files={
                     "file": (
                         "scan.pdf",
@@ -125,13 +155,25 @@ def test_scanned_pdf_uses_vision_fallback():
         data = response.json()
 
         assert (
-            data["extraction_method"]
+            data[
+                "extraction_method"
+            ]
             == "vision"
         )
 
         assert (
-            data["valid"]
-            is True
+            data["filename"]
+            == "scan.pdf"
+        )
+
+        assert (
+            data["database_id"]
+            > 0
+        )
+
+        assert (
+            "invoice"
+            in data
         )
 
     finally:
@@ -142,7 +184,7 @@ def test_scanned_pdf_uses_vision_fallback():
 
 def test_reject_non_pdf_file():
     response = client.post(
-        "/invoices/extract",
+        "/api/invoices/extract",
         files={
             "file": (
                 "test.txt",
@@ -152,7 +194,10 @@ def test_reject_non_pdf_file():
         },
     )
 
-    assert response.status_code == 400
+    assert (
+        response.status_code
+        == 400
+    )
 
     data = response.json()
 

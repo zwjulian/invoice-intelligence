@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Invoice - Invoice Intelligence
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="/static/styles.css"
+    >
+</head>
+
+<body>
+
+<nav class="navbar">
+    <div class="container nav-inner">
+
+        <a
+            href="/"
+            class="brand"
+        >
+            Invoice Intelligence
+        </a>
+
+        <div class="nav-links">
+
+            <a href="/">
+                Dashboard
+            </a>
+
+            <a
+                href="/invoices"
+                class="active"
+            >
+                Invoices
+            </a>
+
+            <a href="/analytics">
+                Analytics
+            </a>
+
+            <a href="/docs">
+                API
+            </a>
+
+        </div>
+
+    </div>
+</nav>
+
+
+<main class="container">
+
+    <div class="page-header">
+
+        <div>
+
+            <a
+                href="/invoices"
+                class="muted"
+            >
+                ← Back to invoices
+            </a>
+
+            <h1
+                id="pageTitle"
+                style="margin-top: 12px;"
+            >
+                Invoice
+            </h1>
+
+            <div
+                id="supplierSubtitle"
+                class="subtitle"
+            ></div>
+
+        </div>
+
+
+        <div
+            id="statusContainer"
+        ></div>
+
+    </div>
+
+
+    <div
+        id="duplicateWarning"
+        class="warning-box hidden"
+    ></div>
+
+
+    <div
+        id="actions"
+        class="actions"
+        style="margin-bottom: 20px;"
+    ></div>
+
+
+    <div class="grid-2">
+
+        <div class="card">
+
+            <h2>Invoice details</h2>
+
+            <div class="info-row">
+                <span class="info-label">
+                    Invoice number
+                </span>
+
+                <span
+                    id="invoiceNumber"
+                    class="info-value"
+                ></span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    Invoice date
+                </span>
+
+                <span
+                    id="invoiceDate"
+                    class="info-value"
+                ></span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    Due date
+                </span>
+
+                <span
+                    id="dueDate"
+                    class="info-value"
+                ></span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    Approved at
+                </span>
+
+                <span
+                    id="approvedAt"
+                    class="info-value"
+                ></span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    Paid at
+                </span>
+
+                <span
+                    id="paidAt"
+                    class="info-value"
+                ></span>
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <h2>Supplier</h2>
+
+            <div class="info-row">
+                <span class="info-label">
+                    Name
+                </span>
+
+                <span
+                    id="supplierName"
+                    class="info-value"
+                ></span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    Address
+                </span>
+
+                <span
+                    id="supplierAddress"
+                    class="info-value"
+                ></span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    VAT number
+                </span>
+
+                <span
+                    id="supplierVat"
+                    class="info-value"
+                ></span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    Extraction
+                </span>
+
+                <span
+                    id="extractionMethod"
+                    class="info-value"
+                ></span>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2>Line items</h2>
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Quantity</th>
+                        <th>Unit price</th>
+                        <th>VAT</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+
+                <tbody
+                    id="lineItems"
+                ></tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <div class="grid-2">
+
+            <div>
+
+                <h2>Validation</h2>
+
+                <div
+                    id="validationStatus"
+                ></div>
+
+                <div
+                    id="warnings"
+                    style="margin-top: 15px;"
+                ></div>
+
+            </div>
+
+
+            <div>
+
+                <h2>Totals</h2>
+
+                <div class="info-row">
+                    <span class="info-label">
+                        Subtotal
+                    </span>
+
+                    <span
+                        id="subtotal"
+                        class="info-value"
+                    ></span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">
+                        VAT
+                    </span>
+
+                    <span
+                        id="vatAmount"
+                        class="info-value"
+                    ></span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">
+                        Total
+                    </span>
+
+                    <span
+                        id="totalAmount"
+                        class="money-large"
+                    ></span>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</main>
+
+
+<script>
+
+const invoiceId =
+    window.location.pathname
+        .split("/")
+        .filter(Boolean)
+        .pop();
+
+
+function valueOrDash(
+    value
+) {
+    if (
+        value === null ||
+        value === undefined ||
+        value === ""
+    ) {
+        return "—";
+    }
+
+    return value;
+}
+
+
+function formatMoney(
+    value,
+    currency
+) {
+    if (
+        value === null ||
+        value === undefined
+    ) {
+        return "—";
+    }
+
+    return (
+        `${currency || ""} `
+        + Number(value).toLocaleString(
+            undefined,
+            {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }
+        )
+    ).trim();
+}
+
+
+function formatDateTime(
+    value
+) {
+    if (!value) {
+        return "—";
+    }
+
+    return new Date(
+        value
+    ).toLocaleString();
+}
+
+
+function statusBadge(
+    status
+) {
+    const names = {
+        new: "New",
+        approved: "Approved",
+        paid: "Paid"
+    };
+
+    return `
+        <span
+            class="badge badge-${status}"
+        >
+            ${names[status] || status}
+        </span>
+    `;
+}
+
+
+async function loadInvoice() {
+
+    const response =
+        await fetch(
+            `/api/invoices/${invoiceId}`
+        );
+
+
+    if (!response.ok) {
+        document.querySelector(
+            "main"
+        ).innerHTML = `
+            <div class="card">
+                Invoice not found.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    const stored =
+        await response.json();
+
+    const invoice =
+        stored.invoice_data;
+
+    const currency =
+        invoice.currency || "";
+
+
+    document.title =
+        `${invoice.invoice_number || "Invoice"} - Invoice Intelligence`;
+
+
+    document.getElementById(
+        "pageTitle"
+    ).textContent =
+        invoice.invoice_number
+        || `Invoice #${stored.id}`;
+
+
+    document.getElementById(
+        "supplierSubtitle"
+    ).textContent =
+        invoice.supplier?.name
+        || stored.supplier_name
+        || "";
+
+
+    document.getElementById(
+        "statusContainer"
+    ).innerHTML =
+        statusBadge(
+            stored.status
+        );
+
+
+    document.getElementById(
+        "invoiceNumber"
+    ).textContent =
+        valueOrDash(
+            invoice.invoice_number
+        );
+
+
+    document.getElementById(
+        "invoiceDate"
+    ).textContent =
+        valueOrDash(
+            invoice.invoice_date
+        );
+
+
+    document.getElementById(
+        "dueDate"
+    ).textContent =
+        valueOrDash(
+            invoice.due_date
+        );
+
+
+    document.getElementById(
+        "approvedAt"
+    ).textContent =
+        formatDateTime(
+            stored.approved_at
+        );
+
+
+    document.getElementById(
+        "paidAt"
+    ).textContent =
+        formatDateTime(
+            stored.paid_at
+        );
+
+
+    document.getElementById(
+        "supplierName"
+    ).textContent =
+        valueOrDash(
+            invoice.supplier?.name
+        );
+
+
+    document.getElementById(
+        "supplierAddress"
+    ).textContent =
+        valueOrDash(
+            invoice.supplier?.address
+        );
+
+
+    document.getElementById(
+        "supplierVat"
+    ).textContent =
+        valueOrDash(
+            invoice.supplier?.vat_number
+        );
+
+
+    document.getElementById(
+        "extractionMethod"
+    ).textContent =
+        stored.extraction_method;
+
+
+    document.getElementById(
+        "subtotal"
+    ).textContent =
+        formatMoney(
+            invoice.subtotal,
+            currency
+        );
+
+
+    document.getElementById(
+        "vatAmount"
+    ).textContent =
+        formatMoney(
+            invoice.vat_amount,
+            currency
+        );
+
+
+    document.getElementById(
+        "totalAmount"
+    ).textContent =
+        formatMoney(
+            invoice.total_amount,
+            currency
+        );
+
+
+    renderLines(
+        invoice.line_items || [],
+        currency
+    );
+
+
+    renderValidation(
+        stored
+    );
+
+
+    renderActions(
+        stored
+    );
+
+
+    if (
+        stored.duplicate_of_id
+        !== null
+    ) {
+
+        const warning =
+            document.getElementById(
+                "duplicateWarning"
+            );
+
+        warning.classList.remove(
+            "hidden"
+        );
+
+        warning.innerHTML = `
+            Possible duplicate of
+            <a
+                href="/invoices/${stored.duplicate_of_id}"
+            >
+                invoice #${stored.duplicate_of_id}
+            </a>.
+        `;
+    }
+}
+
+
+function renderLines(
+    items,
+    currency
+) {
+    const body =
+        document.getElementById(
+            "lineItems"
+        );
+
+    body.innerHTML = "";
+
+
+    if (
+        items.length === 0
+    ) {
+        body.innerHTML = `
+            <tr>
+                <td colspan="5">
+                    No line items extracted.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+
+    for (
+        const item
+        of items
+    ) {
+
+        const row =
+            document.createElement(
+                "tr"
+            );
+
+        row.innerHTML = `
+            <td>
+                ${valueOrDash(
+                    item.description
+                )}
+            </td>
+
+            <td>
+                ${valueOrDash(
+                    item.quantity
+                )}
+            </td>
+
+            <td>
+                ${formatMoney(
+                    item.unit_price,
+                    currency
+                )}
+            </td>
+
+            <td>
+                ${
+                    item.vat_rate
+                    === null
+                    || item.vat_rate
+                    === undefined
+                    ? "—"
+                    : `${item.vat_rate}%`
+                }
+            </td>
+
+            <td>
+                ${formatMoney(
+                    item.total,
+                    currency
+                )}
+            </td>
+        `;
+
+        body.appendChild(
+            row
+        );
+    }
+}
+
+
+function renderValidation(
+    stored
+) {
+    const status =
+        document.getElementById(
+            "validationStatus"
+        );
+
+    status.innerHTML =
+        stored.valid
+        ? (
+            '<span class="badge badge-valid">'
+            + 'Valid'
+            + '</span>'
+        )
+        : (
+            '<span class="badge badge-invalid">'
+            + 'Review required'
+            + '</span>'
+        );
+
+
+    const warnings =
+        document.getElementById(
+            "warnings"
+        );
+
+
+    if (
+        !stored.warnings
+        || stored.warnings.length === 0
+    ) {
+        warnings.innerHTML = `
+            <span class="muted">
+                No validation warnings.
+            </span>
+        `;
+
+        return;
+    }
+
+
+    warnings.innerHTML =
+        stored.warnings
+            .map(
+                warning => `
+                    <div class="warning-box">
+                        ${warning}
+                    </div>
+                `
+            )
+            .join("");
+}
+
+
+function renderActions(
+    stored
+) {
+    const actions =
+        document.getElementById(
+            "actions"
+        );
+
+    actions.innerHTML = "";
+
+
+    if (
+        stored.status === "new"
+    ) {
+
+        actions.innerHTML = `
+            <button
+                class="button-success"
+                onclick="changeStatus(
+                    'approved'
+                )"
+            >
+                Approve invoice
+            </button>
+        `;
+
+        return;
+    }
+
+
+    if (
+        stored.status === "approved"
+    ) {
+
+        actions.innerHTML = `
+            <button
+                class="button-success"
+                onclick="changeStatus(
+                    'paid'
+                )"
+            >
+                Mark as paid
+            </button>
+
+            <button
+                class="button-secondary"
+                onclick="changeStatus(
+                    'new'
+                )"
+            >
+                Move back to new
+            </button>
+        `;
+
+        return;
+    }
+
+
+    if (
+        stored.status === "paid"
+    ) {
+
+        actions.innerHTML = `
+            <button
+                class="button-secondary"
+                onclick="changeStatus(
+                    'approved'
+                )"
+            >
+                Undo paid
+            </button>
+        `;
+
+    }
+}
+
+
+async function changeStatus(
+    status
+) {
+
+    const response =
+        await fetch(
+            `/api/invoices/${invoiceId}/status`,
+            {
+                method: "PATCH",
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+                body: JSON.stringify({
+                    status: status
+                })
+            }
+        );
+
+
+    const data =
+        await response.json();
+
+
+    if (!response.ok) {
+        alert(
+            data.detail
+            || "Could not update invoice."
+        );
+
+        return;
+    }
+
+
+    await loadInvoice();
+}
+
+
+loadInvoice();
+
+</script>
+
+</body>
+
+</html>

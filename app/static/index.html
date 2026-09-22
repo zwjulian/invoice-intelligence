@@ -9,365 +9,72 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Invoice Intelligence</title>
+    <title>
+        Invoice Intelligence
+    </title>
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f4f6f8;
-            color: #1f2937;
-        }
-
-        .container {
-            max-width: 1250px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-
-        h1,
-        h2,
-        h3 {
-            margin-top: 0;
-        }
-
-        .subtitle {
-            color: #6b7280;
-            margin-top: -8px;
-            margin-bottom: 30px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 22px;
-            box-shadow:
-                0 2px 10px
-                rgba(0, 0, 0, 0.06);
-            margin-bottom: 20px;
-        }
-
-        .upload-row {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        input[type="file"] {
-            flex: 1;
-            min-width: 250px;
-        }
-
-        button {
-            border: none;
-            background: #2563eb;
-            color: white;
-            padding: 10px 16px;
-            border-radius: 7px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        button:hover {
-            background: #1d4ed8;
-        }
-
-        button:disabled {
-            opacity: 0.6;
-            cursor: default;
-        }
-
-        .secondary-button {
-            background: #6b7280;
-        }
-
-        .success-button {
-            background: #15803d;
-        }
-
-        .status-text {
-            margin-top: 14px;
-            color: #6b7280;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns:
-                repeat(6, 1fr);
-            gap: 14px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 18px;
-            border-radius: 12px;
-            box-shadow:
-                0 2px 10px
-                rgba(0, 0, 0, 0.06);
-        }
-
-        .stat-label {
-            color: #6b7280;
-            font-size: 12px;
-            margin-bottom: 8px;
-        }
-
-        .stat-value {
-            font-size: 25px;
-            font-weight: bold;
-        }
-
-        .analytics-grid {
-            display: grid;
-            grid-template-columns:
-                repeat(3, 1fr);
-            gap: 20px;
-        }
-
-        .amount-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .amount-row {
-            display: flex;
-            justify-content: space-between;
-            gap: 15px;
-            padding-bottom: 8px;
-            border-bottom:
-                1px solid #e5e7eb;
-        }
-
-        .amount {
-            font-size: 20px;
-            font-weight: bold;
-        }
-
-        .muted {
-            color: #6b7280;
-            font-size: 13px;
-        }
-
-        .toolbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
-            margin-bottom: 18px;
-        }
-
-        .filters {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .filter-button {
-            background: #e5e7eb;
-            color: #374151;
-        }
-
-        .filter-button.active {
-            background: #2563eb;
-            color: white;
-        }
-
-        .table-wrapper {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th,
-        td {
-            padding: 12px 10px;
-            border-bottom:
-                1px solid #e5e7eb;
-            text-align: left;
-            white-space: nowrap;
-        }
-
-        th {
-            color: #6b7280;
-            font-size: 12px;
-            text-transform: uppercase;
-        }
-
-        tr:hover {
-            background: #f9fafb;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 5px 9px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .badge-new {
-            background: #dbeafe;
-            color: #1d4ed8;
-        }
-
-        .badge-approved {
-            background: #ede9fe;
-            color: #6d28d9;
-        }
-
-        .badge-paid,
-        .badge-valid {
-            background: #dcfce7;
-            color: #15803d;
-        }
-
-        .badge-invalid,
-        .badge-overdue {
-            background: #fee2e2;
-            color: #b91c1c;
-        }
-
-        .badge-duplicate {
-            background: #fef3c7;
-            color: #b45309;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .detail-grid {
-            display: grid;
-            grid-template-columns:
-                repeat(2, 1fr);
-            gap: 20px;
-        }
-
-        .label {
-            color: #6b7280;
-            font-size: 12px;
-            margin-bottom: 3px;
-        }
-
-        .value {
-            margin-bottom: 14px;
-            font-weight: 600;
-        }
-
-        .detail-actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin: 20px 0;
-        }
-
-        .duplicate-warning {
-            background: #fffbeb;
-            color: #92400e;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 18px;
-        }
-
-        .success-box {
-            background: #ecfdf5;
-            color: #166534;
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 15px;
-        }
-
-        .error-box {
-            background: #fef2f2;
-            color: #991b1b;
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 15px;
-        }
-
-        .empty-state {
-            text-align: center;
-            color: #6b7280;
-            padding: 30px;
-        }
-
-        @media (max-width: 1000px) {
-            .stats {
-                grid-template-columns:
-                    repeat(3, 1fr);
-            }
-
-            .analytics-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 600px) {
-            .stats {
-                grid-template-columns:
-                    repeat(2, 1fr);
-            }
-
-            .detail-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <link
+        rel="stylesheet"
+        href="/static/styles.css"
+    >
 </head>
 
 <body>
 
-<div class="container">
+<nav class="navbar">
+    <div class="container nav-inner">
 
-    <h1>Invoice Intelligence</h1>
+        <a
+            href="/"
+            class="brand"
+        >
+            Invoice Intelligence
+        </a>
 
-    <p class="subtitle">
-        AI-powered invoice extraction,
-        validation, workflow and financial reporting.
-    </p>
-
-
-    <div class="card">
-
-        <h2>Upload invoice</h2>
-
-        <div class="upload-row">
-
-            <input
-                id="fileInput"
-                type="file"
-                accept="application/pdf"
+        <div class="nav-links">
+            <a
+                href="/"
+                class="active"
             >
+                Dashboard
+            </a>
 
-            <button
-                id="uploadButton"
-                onclick="uploadInvoice()"
-            >
-                Process invoice
-            </button>
+            <a href="/invoices">
+                Invoices
+            </a>
 
+            <a href="/analytics">
+                Analytics
+            </a>
+
+            <a href="/docs">
+                API
+            </a>
         </div>
 
-        <div
-            id="uploadStatus"
-            class="status-text"
-        ></div>
+    </div>
+</nav>
 
-        <div
-            id="uploadResult"
-            class="hidden"
-        ></div>
+
+<main class="container">
+
+    <div class="page-header">
+
+        <div>
+            <h1>Dashboard</h1>
+
+            <div class="subtitle">
+                Process invoices and monitor
+                your accounts payable workflow.
+            </div>
+        </div>
+
+        <a
+            href="/invoices"
+            class="button"
+        >
+            View all invoices
+        </a>
 
     </div>
 
@@ -376,124 +83,153 @@
 
         <div class="stat-card">
             <div class="stat-label">
-                Total
+                Total invoices
             </div>
+
             <div
                 id="totalInvoices"
                 class="stat-value"
             >
-                0
+                —
             </div>
         </div>
+
 
         <div class="stat-card">
             <div class="stat-label">
                 New
             </div>
+
             <div
                 id="newInvoices"
                 class="stat-value"
             >
-                0
+                —
             </div>
         </div>
+
 
         <div class="stat-card">
             <div class="stat-label">
                 Approved
             </div>
+
             <div
                 id="approvedInvoices"
                 class="stat-value"
             >
-                0
+                —
             </div>
         </div>
+
 
         <div class="stat-card">
             <div class="stat-label">
                 Paid
             </div>
+
             <div
                 id="paidInvoices"
                 class="stat-value"
             >
-                0
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-label">
-                Overdue
-            </div>
-            <div
-                id="overdueInvoices"
-                class="stat-value"
-            >
-                0
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-label">
-                Duplicates
-            </div>
-            <div
-                id="duplicateInvoices"
-                class="stat-value"
-            >
-                0
+                —
             </div>
         </div>
 
     </div>
 
 
-    <div class="analytics-grid">
+    <div class="grid-2">
 
         <div class="card">
-            <h2>Open amount</h2>
+
+            <h2>Upload invoice</h2>
 
             <p class="muted">
-                New + approved invoices.
-                Valid, non-duplicate invoices only.
+                Upload a PDF to automatically
+                extract and validate its contents.
             </p>
 
-            <div
-                id="openAmounts"
-                class="amount-list"
-            ></div>
-        </div>
+            <div class="upload-row">
 
+                <input
+                    id="fileInput"
+                    type="file"
+                    accept="application/pdf"
+                >
 
-        <div class="card">
-            <h2>Paid amount</h2>
+                <button
+                    id="uploadButton"
+                    onclick="uploadInvoice()"
+                >
+                    Process invoice
+                </button>
 
-            <p class="muted">
-                All invoices currently marked as paid.
-                Valid, non-duplicate invoices only.
-            </p>
-
-            <div
-                id="paidAmounts"
-                class="amount-list"
-            ></div>
-        </div>
-
-
-        <div class="card">
-            <h2>Requires attention</h2>
-
-            <div
-                id="attentionCount"
-                class="stat-value"
-            >
-                0
             </div>
 
-            <p class="muted">
-                Invalid, duplicate or overdue invoices.
-            </p>
+            <div
+                id="uploadResult"
+            ></div>
+
+        </div>
+
+
+        <div class="card">
+
+            <h2>Current workload</h2>
+
+            <div class="info-row">
+                <span class="info-label">
+                    Overdue
+                </span>
+
+                <span
+                    id="overdueInvoices"
+                    class="info-value"
+                >
+                    —
+                </span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    Duplicates
+                </span>
+
+                <span
+                    id="duplicateInvoices"
+                    class="info-value"
+                >
+                    —
+                </span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    Requires attention
+                </span>
+
+                <span
+                    id="attentionInvoices"
+                    class="info-value"
+                >
+                    —
+                </span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">
+                    Waiting > 7 days
+                </span>
+
+                <span
+                    id="waitingInvoices"
+                    class="info-value"
+                >
+                    —
+                </span>
+            </div>
+
         </div>
 
     </div>
@@ -501,60 +237,16 @@
 
     <div class="card">
 
-        <div class="toolbar">
+        <div class="page-header">
 
-            <h2>Stored invoices</h2>
+            <div>
+                <h2>
+                    Recent invoices
+                </h2>
 
-            <div class="filters">
-
-                <button
-                    class="filter-button active"
-                    data-filter="all"
-                    onclick="setFilter('all')"
-                >
-                    All
-                </button>
-
-                <button
-                    class="filter-button"
-                    data-filter="new"
-                    onclick="setFilter('new')"
-                >
-                    New
-                </button>
-
-                <button
-                    class="filter-button"
-                    data-filter="approved"
-                    onclick="setFilter('approved')"
-                >
-                    Approved
-                </button>
-
-                <button
-                    class="filter-button"
-                    data-filter="paid"
-                    onclick="setFilter('paid')"
-                >
-                    Paid
-                </button>
-
-                <button
-                    class="filter-button"
-                    data-filter="overdue"
-                    onclick="setFilter('overdue')"
-                >
-                    Overdue
-                </button>
-
-                <button
-                    class="filter-button"
-                    data-filter="duplicates"
-                    onclick="setFilter('duplicates')"
-                >
-                    Duplicates
-                </button>
-
+                <div class="muted">
+                    Most recently processed invoices.
+                </div>
             </div>
 
         </div>
@@ -566,13 +258,11 @@
 
                 <thead>
                     <tr>
-                        <th>ID</th>
                         <th>Supplier</th>
                         <th>Invoice</th>
                         <th>Due date</th>
                         <th>Total</th>
                         <th>Status</th>
-                        <th>Checks</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -585,241 +275,12 @@
 
         </div>
 
-        <div
-            id="emptyState"
-            class="empty-state hidden"
-        >
-            No invoices match this filter.
-        </div>
-
     </div>
 
-
-    <div class="card">
-
-        <h2>Supplier spend</h2>
-
-        <p class="muted">
-            Valid, non-duplicate invoices.
-            Currency totals are kept separate.
-        </p>
-
-        <div class="table-wrapper">
-
-            <table>
-
-                <thead>
-                    <tr>
-                        <th>Supplier</th>
-                        <th>Currency</th>
-                        <th>Invoices</th>
-                        <th>Total amount</th>
-                    </tr>
-                </thead>
-
-                <tbody
-                    id="supplierTable"
-                ></tbody>
-
-            </table>
-
-        </div>
-
-    </div>
-
-
-    <div
-        id="detailCard"
-        class="card hidden"
-    >
-
-        <button
-            class="secondary-button"
-            style="float: right;"
-            onclick="closeDetail()"
-        >
-            Close
-        </button>
-
-        <h2>Invoice details</h2>
-
-        <div
-            id="duplicateDetail"
-            class="hidden"
-        ></div>
-
-        <div
-            id="detailActions"
-            class="detail-actions"
-        ></div>
-
-        <div class="detail-grid">
-
-            <div>
-                <h3>Invoice</h3>
-
-                <div class="label">
-                    Invoice number
-                </div>
-                <div
-                    id="detailInvoiceNumber"
-                    class="value"
-                ></div>
-
-                <div class="label">
-                    Invoice date
-                </div>
-                <div
-                    id="detailInvoiceDate"
-                    class="value"
-                ></div>
-
-                <div class="label">
-                    Due date
-                </div>
-                <div
-                    id="detailDueDate"
-                    class="value"
-                ></div>
-
-                <div class="label">
-                    Status
-                </div>
-                <div
-                    id="detailStatus"
-                    class="value"
-                ></div>
-            </div>
-
-
-            <div>
-                <h3>Supplier</h3>
-
-                <div class="label">
-                    Name
-                </div>
-                <div
-                    id="detailSupplier"
-                    class="value"
-                ></div>
-
-                <div class="label">
-                    Address
-                </div>
-                <div
-                    id="detailSupplierAddress"
-                    class="value"
-                ></div>
-
-                <div class="label">
-                    VAT number
-                </div>
-                <div
-                    id="detailSupplierVat"
-                    class="value"
-                ></div>
-            </div>
-
-        </div>
-
-
-        <h3>Line items</h3>
-
-        <div class="table-wrapper">
-
-            <table>
-
-                <thead>
-                    <tr>
-                        <th>Description</th>
-                        <th>Quantity</th>
-                        <th>Unit price</th>
-                        <th>VAT</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-
-                <tbody
-                    id="detailLineItems"
-                ></tbody>
-
-            </table>
-
-        </div>
-
-
-        <div
-            style="
-                margin-top: 20px;
-                text-align: right;
-                font-size: 17px;
-            "
-        >
-            <div>
-                Subtotal:
-                <strong
-                    id="detailSubtotal"
-                ></strong>
-            </div>
-
-            <div>
-                VAT:
-                <strong
-                    id="detailVat"
-                ></strong>
-            </div>
-
-            <div
-                style="
-                    font-size: 21px;
-                    margin-top: 8px;
-                "
-            >
-                Total:
-                <strong
-                    id="detailTotal"
-                ></strong>
-            </div>
-        </div>
-
-    </div>
-
-</div>
+</main>
 
 
 <script>
-
-let invoices = [];
-
-let analytics = null;
-
-let currentFilter = "all";
-
-
-function valueOrDash(value) {
-    if (
-        value === null ||
-        value === undefined ||
-        value === ""
-    ) {
-        return "—";
-    }
-
-    return value;
-}
-
-
-function escapeHtml(value) {
-    return String(
-        valueOrDash(value)
-    )
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-}
-
 
 function formatMoney(
     value,
@@ -832,483 +293,157 @@ function formatMoney(
         return "—";
     }
 
-    const number =
-        Number(value);
-
-    if (
-        Number.isNaN(number)
-    ) {
-        return (
-            `${currency || ""} ${value}`
-        ).trim();
-    }
-
-    const formatted =
-        number.toLocaleString(
+    return (
+        `${currency || ""} `
+        + Number(value).toLocaleString(
             undefined,
             {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
             }
-        );
-
-    return (
-        `${currency || ""} ${formatted}`
+        )
     ).trim();
 }
 
 
-function isOverdue(invoice) {
-    if (!invoice.due_date) {
-        return false;
-    }
+function statusBadge(
+    status
+) {
+    const names = {
+        new: "New",
+        approved: "Approved",
+        paid: "Paid"
+    };
 
-    if (
-        invoice.status === "paid"
-    ) {
-        return false;
-    }
-
-    const dueDate =
-        new Date(
-            `${invoice.due_date}T23:59:59`
-        );
-
-    return dueDate < new Date();
+    return `
+        <span
+            class="badge badge-${status}"
+        >
+            ${names[status] || status}
+        </span>
+    `;
 }
 
 
-function statusBadge(status) {
-    if (
-        status === "approved"
-    ) {
-        return (
-            '<span class="badge badge-approved">'
-            + 'Approved'
-            + '</span>'
-        );
-    }
-
-    if (
-        status === "paid"
-    ) {
-        return (
-            '<span class="badge badge-paid">'
-            + 'Paid'
-            + '</span>'
-        );
-    }
-
-    return (
-        '<span class="badge badge-new">'
-        + 'New'
-        + '</span>'
-    );
-}
-
-
-async function refreshDashboard() {
+async function loadDashboard() {
 
     const [
-        invoiceResponse,
-        analyticsResponse
+        analyticsResponse,
+        invoicesResponse
     ] = await Promise.all([
-        fetch("/invoices"),
-        fetch("/analytics/summary")
+        fetch(
+            "/api/analytics/summary"
+        ),
+        fetch(
+            "/api/invoices?limit=5"
+        )
     ]);
 
 
-    if (invoiceResponse.ok) {
-        invoices =
-            await invoiceResponse.json();
-
-        renderInvoiceTable();
-    }
-
-
     if (analyticsResponse.ok) {
-        analytics =
+
+        const data =
             await analyticsResponse.json();
 
-        renderAnalytics();
-    }
-}
 
-
-function renderAnalytics() {
-    if (!analytics) {
-        return;
-    }
-
-
-    document.getElementById(
-        "totalInvoices"
-    ).textContent =
-        analytics.total_invoices;
-
-
-    document.getElementById(
-        "newInvoices"
-    ).textContent =
-        analytics.new_invoices;
-
-
-    document.getElementById(
-        "approvedInvoices"
-    ).textContent =
-        analytics.approved_invoices;
-
-
-    document.getElementById(
-        "paidInvoices"
-    ).textContent =
-        analytics.paid_invoices;
-
-
-    document.getElementById(
-        "overdueInvoices"
-    ).textContent =
-        analytics.overdue_invoices;
-
-
-    document.getElementById(
-        "duplicateInvoices"
-    ).textContent =
-        analytics.duplicate_invoices;
-
-
-    document.getElementById(
-        "attentionCount"
-    ).textContent =
-        analytics.requires_attention;
-
-
-    renderCurrencyAmounts(
-        "openAmounts",
-        analytics.open_amounts
-    );
-
-
-    renderCurrencyAmounts(
-        "paidAmounts",
-        analytics.paid_amounts
-    );
-
-
-    renderSupplierTable(
-        analytics.supplier_totals
-    );
-}
-
-
-function renderCurrencyAmounts(
-    elementId,
-    amounts
-) {
-    const container =
         document.getElementById(
-            elementId
-        );
-
-    container.innerHTML = "";
-
-
-    if (
-        !amounts ||
-        amounts.length === 0
-    ) {
-        container.innerHTML =
-            '<span class="muted">No data yet.</span>';
-
-        return;
-    }
+            "totalInvoices"
+        ).textContent =
+            data.total_invoices;
 
 
-    for (
-        const item
-        of amounts
-    ) {
-        const row =
-            document.createElement(
-                "div"
-            );
-
-        row.className =
-            "amount-row";
-
-        row.innerHTML = `
-            <div>
-                <div class="amount">
-                    ${escapeHtml(
-                        formatMoney(
-                            item.amount,
-                            item.currency
-                        )
-                    )}
-                </div>
-
-                <div class="muted">
-                    ${item.invoice_count}
-                    invoice(s)
-                </div>
-            </div>
-        `;
-
-        container.appendChild(
-            row
-        );
-    }
-}
-
-
-function renderSupplierTable(
-    suppliers
-) {
-    const table =
         document.getElementById(
-            "supplierTable"
-        );
+            "newInvoices"
+        ).textContent =
+            data.new_invoices;
 
-    table.innerHTML = "";
+
+        document.getElementById(
+            "approvedInvoices"
+        ).textContent =
+            data.approved_invoices;
 
 
-    if (
-        !suppliers ||
-        suppliers.length === 0
-    ) {
-        const row =
-            document.createElement(
-                "tr"
-            );
+        document.getElementById(
+            "paidInvoices"
+        ).textContent =
+            data.paid_invoices;
 
-        row.innerHTML = `
-            <td colspan="4">
-                No supplier data yet.
-            </td>
-        `;
 
-        table.appendChild(
-            row
-        );
+        document.getElementById(
+            "overdueInvoices"
+        ).textContent =
+            data.overdue_invoices;
 
-        return;
+
+        document.getElementById(
+            "duplicateInvoices"
+        ).textContent =
+            data.duplicate_invoices;
+
+
+        document.getElementById(
+            "attentionInvoices"
+        ).textContent =
+            data.requires_attention;
+
+
+        document.getElementById(
+            "waitingInvoices"
+        ).textContent =
+            data.waiting_approval_over_7_days;
     }
 
 
-    for (
-        const supplier
-        of suppliers
-    ) {
-        const row =
-            document.createElement(
-                "tr"
-            );
+    if (invoicesResponse.ok) {
 
-        row.innerHTML = `
-            <td>
-                ${escapeHtml(
-                    supplier.supplier_name
-                )}
-            </td>
+        const invoices =
+            await invoicesResponse.json();
 
-            <td>
-                ${escapeHtml(
-                    supplier.currency
-                )}
-            </td>
-
-            <td>
-                ${supplier.invoice_count}
-            </td>
-
-            <td>
-                ${escapeHtml(
-                    formatMoney(
-                        supplier.total_amount,
-                        supplier.currency
-                    )
-                )}
-            </td>
-        `;
-
-        table.appendChild(
-            row
+        renderInvoices(
+            invoices
         );
     }
 }
 
 
-function filteredInvoices() {
-    if (
-        currentFilter === "all"
-    ) {
-        return invoices;
-    }
-
-    if (
-        currentFilter === "overdue"
-    ) {
-        return invoices.filter(
-            invoice =>
-                isOverdue(invoice)
-        );
-    }
-
-    if (
-        currentFilter
-        === "duplicates"
-    ) {
-        return invoices.filter(
-            invoice =>
-                invoice.duplicate_of_id
-                !== null
-        );
-    }
-
-    return invoices.filter(
-        invoice =>
-            invoice.status
-            === currentFilter
-    );
-}
-
-
-function setFilter(filter) {
-    currentFilter = filter;
-
-    document.querySelectorAll(
-        ".filter-button"
-    ).forEach(
-        button => {
-            button.classList.remove(
-                "active"
-            );
-        }
-    );
-
-    const activeButton =
-        document.querySelector(
-            `[data-filter="${filter}"]`
-        );
-
-    if (activeButton) {
-        activeButton.classList.add(
-            "active"
-        );
-    }
-
-    renderInvoiceTable();
-}
-
-
-function renderInvoiceTable() {
-
-    const table =
+function renderInvoices(
+    invoices
+) {
+    const body =
         document.getElementById(
             "invoiceTable"
         );
 
-    const emptyState =
-        document.getElementById(
-            "emptyState"
-        );
-
-    table.innerHTML = "";
-
-    const visibleInvoices =
-        filteredInvoices();
-
-
-    if (
-        visibleInvoices.length
-        === 0
-    ) {
-        emptyState.classList.remove(
-            "hidden"
-        );
-
-        return;
-    }
-
-
-    emptyState.classList.add(
-        "hidden"
-    );
+    body.innerHTML = "";
 
 
     for (
         const invoice
-        of visibleInvoices
+        of invoices
     ) {
         const row =
             document.createElement(
                 "tr"
             );
 
-        let checks = "";
-
-        if (invoice.valid) {
-            checks +=
-                '<span class="badge badge-valid">'
-                + 'Valid'
-                + '</span> ';
-        }
-
-        else {
-            checks +=
-                '<span class="badge badge-invalid">'
-                + 'Review'
-                + '</span> ';
-        }
-
-        if (
-            invoice.duplicate_of_id
-            !== null
-        ) {
-            checks +=
-                '<span class="badge badge-duplicate">'
-                + 'Duplicate'
-                + '</span> ';
-        }
-
-        if (
-            isOverdue(invoice)
-        ) {
-            checks +=
-                '<span class="badge badge-overdue">'
-                + 'Overdue'
-                + '</span>';
-        }
-
         row.innerHTML = `
             <td>
-                ${invoice.id}
+                ${invoice.supplier_name || "—"}
             </td>
 
             <td>
-                ${escapeHtml(
-                    invoice.supplier_name
-                )}
+                ${invoice.invoice_number || "—"}
             </td>
 
             <td>
-                ${escapeHtml(
-                    invoice.invoice_number
-                )}
+                ${invoice.due_date || "—"}
             </td>
 
             <td>
-                ${escapeHtml(
-                    invoice.due_date
-                )}
-            </td>
-
-            <td>
-                ${escapeHtml(
-                    formatMoney(
-                        invoice.total_amount,
-                        invoice.currency
-                    )
+                ${formatMoney(
+                    invoice.total_amount,
+                    invoice.currency
                 )}
             </td>
 
@@ -1319,21 +454,16 @@ function renderInvoiceTable() {
             </td>
 
             <td>
-                ${checks}
-            </td>
-
-            <td>
-                <button
-                    onclick="showInvoice(
-                        ${invoice.id}
-                    )"
+                <a
+                    class="button"
+                    href="/invoices/${invoice.id}"
                 >
                     View
-                </button>
+                </a>
             </td>
         `;
 
-        table.appendChild(
+        body.appendChild(
             row
         );
     }
@@ -1352,11 +482,6 @@ async function uploadInvoice() {
             "uploadButton"
         );
 
-    const status =
-        document.getElementById(
-            "uploadStatus"
-        );
-
     const result =
         document.getElementById(
             "uploadResult"
@@ -1366,7 +491,10 @@ async function uploadInvoice() {
     if (
         !fileInput.files.length
     ) {
-        status.textContent =
+        result.className =
+            "error-box";
+
+        result.textContent =
             "Select a PDF first.";
 
         return;
@@ -1384,23 +512,23 @@ async function uploadInvoice() {
 
     button.disabled = true;
 
-    status.textContent =
-        "Processing invoice...";
+    button.textContent =
+        "Processing...";
 
-    result.classList.add(
-        "hidden"
-    );
+    result.innerHTML = "";
 
 
     try {
+
         const response =
             await fetch(
-                "/invoices/extract",
+                "/api/invoices/extract",
                 {
                     method: "POST",
                     body: formData
                 }
             );
+
 
         const data =
             await response.json();
@@ -1409,438 +537,83 @@ async function uploadInvoice() {
         if (!response.ok) {
             throw new Error(
                 data.detail ||
-                "Extraction failed."
+                "Invoice processing failed."
             );
         }
 
 
         result.className =
-            "success-box";
+            data.duplicate
+            ? "warning-box"
+            : "success-box";
 
 
         if (data.duplicate) {
+
             result.innerHTML = `
-                Invoice stored as
-                <strong>
-                    #${data.database_id}
-                </strong>.
-                <br>
-                ⚠ Possible duplicate of
-                invoice
-                <strong>
-                    #${data.duplicate_of_id}
-                </strong>.
+                Invoice stored successfully.
+                Possible duplicate of
+                <a href="/invoices/${data.duplicate_of_id}">
+                    invoice #${data.duplicate_of_id}
+                </a>.
+                <br><br>
+                <a
+                    href="/invoices/${data.database_id}"
+                    class="button"
+                >
+                    Review invoice
+                </a>
             `;
+
         }
 
         else {
+
             result.innerHTML = `
-                ✓ Invoice extracted and
-                stored successfully as
-                <strong>
-                    #${data.database_id}
-                </strong>.
+                Invoice processed successfully.
+                <br><br>
+                <a
+                    href="/invoices/${data.database_id}"
+                    class="button"
+                >
+                    Review invoice
+                </a>
             `;
+
         }
 
 
-        status.textContent = "";
-
         fileInput.value = "";
 
-        await refreshDashboard();
-
-        await showInvoice(
-            data.database_id
-        );
+        await loadDashboard();
 
     }
 
     catch (error) {
+
         result.className =
             "error-box";
 
         result.textContent =
-            `Error: ${error.message}`;
+            error.message;
+
     }
 
     finally {
+
         button.disabled = false;
-    }
-}
-
-
-async function updateStatus(
-    invoiceId,
-    newStatus
-) {
-    const response =
-        await fetch(
-            `/invoices/${invoiceId}/status`,
-            {
-                method: "PATCH",
-                headers: {
-                    "Content-Type":
-                        "application/json"
-                },
-                body: JSON.stringify({
-                    status: newStatus
-                })
-            }
-        );
-
-    const data =
-        await response.json();
-
-
-    if (!response.ok) {
-        alert(
-            data.detail ||
-            "Could not update status."
-        );
-
-        return;
-    }
-
-
-    await refreshDashboard();
-
-    await showInvoice(
-        invoiceId
-    );
-}
-
-
-function renderActionButtons(
-    stored
-) {
-    const container =
-        document.getElementById(
-            "detailActions"
-        );
-
-    container.innerHTML = "";
-
-
-    if (
-        stored.status === "new"
-    ) {
-        const button =
-            document.createElement(
-                "button"
-            );
-
-        button.className =
-            "success-button";
 
         button.textContent =
-            "Approve invoice";
+            "Process invoice";
 
-        button.onclick =
-            () => updateStatus(
-                stored.id,
-                "approved"
-            );
-
-        container.appendChild(
-            button
-        );
-    }
-
-
-    if (
-        stored.status
-        === "approved"
-    ) {
-        const paidButton =
-            document.createElement(
-                "button"
-            );
-
-        paidButton.className =
-            "success-button";
-
-        paidButton.textContent =
-            "Mark as paid";
-
-        paidButton.onclick =
-            () => updateStatus(
-                stored.id,
-                "paid"
-            );
-
-        container.appendChild(
-            paidButton
-        );
-
-
-        const backButton =
-            document.createElement(
-                "button"
-            );
-
-        backButton.className =
-            "secondary-button";
-
-        backButton.textContent =
-            "Move back to new";
-
-        backButton.onclick =
-            () => updateStatus(
-                stored.id,
-                "new"
-            );
-
-        container.appendChild(
-            backButton
-        );
-    }
-
-
-    if (
-        stored.status === "paid"
-    ) {
-        const button =
-            document.createElement(
-                "button"
-            );
-
-        button.className =
-            "secondary-button";
-
-        button.textContent =
-            "Undo paid";
-
-        button.onclick =
-            () => updateStatus(
-                stored.id,
-                "approved"
-            );
-
-        container.appendChild(
-            button
-        );
     }
 }
 
 
-async function showInvoice(
-    invoiceId
-) {
-    const response =
-        await fetch(
-            `/invoices/${invoiceId}`
-        );
-
-    if (!response.ok) {
-        return;
-    }
-
-    const stored =
-        await response.json();
-
-    const invoice =
-        stored.invoice_data;
-
-    const currency =
-        invoice.currency || "";
-
-
-    document.getElementById(
-        "detailInvoiceNumber"
-    ).textContent =
-        valueOrDash(
-            invoice.invoice_number
-        );
-
-    document.getElementById(
-        "detailInvoiceDate"
-    ).textContent =
-        valueOrDash(
-            invoice.invoice_date
-        );
-
-    document.getElementById(
-        "detailDueDate"
-    ).textContent =
-        valueOrDash(
-            invoice.due_date
-        );
-
-    document.getElementById(
-        "detailStatus"
-    ).innerHTML =
-        statusBadge(
-            stored.status
-        );
-
-    document.getElementById(
-        "detailSupplier"
-    ).textContent =
-        valueOrDash(
-            invoice.supplier?.name
-        );
-
-    document.getElementById(
-        "detailSupplierAddress"
-    ).textContent =
-        valueOrDash(
-            invoice.supplier?.address
-        );
-
-    document.getElementById(
-        "detailSupplierVat"
-    ).textContent =
-        valueOrDash(
-            invoice.supplier?.vat_number
-        );
-
-    document.getElementById(
-        "detailSubtotal"
-    ).textContent =
-        formatMoney(
-            invoice.subtotal,
-            currency
-        );
-
-    document.getElementById(
-        "detailVat"
-    ).textContent =
-        formatMoney(
-            invoice.vat_amount,
-            currency
-        );
-
-    document.getElementById(
-        "detailTotal"
-    ).textContent =
-        formatMoney(
-            invoice.total_amount,
-            currency
-        );
-
-
-    const lineBody =
-        document.getElementById(
-            "detailLineItems"
-        );
-
-    lineBody.innerHTML = "";
-
-
-    for (
-        const item
-        of invoice.line_items || []
-    ) {
-        const row =
-            document.createElement(
-                "tr"
-            );
-
-        row.innerHTML = `
-            <td>
-                ${escapeHtml(
-                    item.description
-                )}
-            </td>
-
-            <td>
-                ${escapeHtml(
-                    item.quantity
-                )}
-            </td>
-
-            <td>
-                ${escapeHtml(
-                    formatMoney(
-                        item.unit_price,
-                        currency
-                    )
-                )}
-            </td>
-
-            <td>
-                ${escapeHtml(
-                    item.vat_rate
-                )}%
-            </td>
-
-            <td>
-                ${escapeHtml(
-                    formatMoney(
-                        item.total,
-                        currency
-                    )
-                )}
-            </td>
-        `;
-
-        lineBody.appendChild(
-            row
-        );
-    }
-
-
-    const duplicateBox =
-        document.getElementById(
-            "duplicateDetail"
-        );
-
-
-    if (
-        stored.duplicate_of_id
-        !== null
-    ) {
-        duplicateBox.className =
-            "duplicate-warning";
-
-        duplicateBox.innerHTML = `
-            ⚠ Possible duplicate of stored
-            invoice
-            <strong>
-                #${stored.duplicate_of_id}
-            </strong>.
-        `;
-    }
-
-    else {
-        duplicateBox.className =
-            "hidden";
-    }
-
-
-    renderActionButtons(
-        stored
-    );
-
-
-    const detailCard =
-        document.getElementById(
-            "detailCard"
-        );
-
-    detailCard.classList.remove(
-        "hidden"
-    );
-
-    detailCard.scrollIntoView({
-        behavior: "smooth"
-    });
-}
-
-
-function closeDetail() {
-    document.getElementById(
-        "detailCard"
-    ).classList.add(
-        "hidden"
-    );
-}
-
-
-refreshDashboard();
+loadDashboard();
 
 </script>
 
 </body>
+
 </html>

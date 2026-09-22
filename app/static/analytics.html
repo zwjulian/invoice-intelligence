@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Analytics - Invoice Intelligence
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="/static/styles.css"
+    >
+</head>
+
+<body>
+
+<nav class="navbar">
+    <div class="container nav-inner">
+
+        <a
+            href="/"
+            class="brand"
+        >
+            Invoice Intelligence
+        </a>
+
+        <div class="nav-links">
+
+            <a href="/">
+                Dashboard
+            </a>
+
+            <a href="/invoices">
+                Invoices
+            </a>
+
+            <a
+                href="/analytics"
+                class="active"
+            >
+                Analytics
+            </a>
+
+            <a href="/docs">
+                API
+            </a>
+
+        </div>
+
+    </div>
+</nav>
+
+
+<main class="container">
+
+    <div class="page-header">
+
+        <div>
+            <h1>
+                Financial analytics
+            </h1>
+
+            <div class="subtitle">
+                Financial and workflow insights
+                based on processed invoices.
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="stats">
+
+        <div class="stat-card">
+            <div class="stat-label">
+                Total invoices
+            </div>
+
+            <div
+                id="totalInvoices"
+                class="stat-value"
+            >
+                —
+            </div>
+        </div>
+
+
+        <div class="stat-card">
+            <div class="stat-label">
+                Overdue
+            </div>
+
+            <div
+                id="overdueInvoices"
+                class="stat-value"
+            >
+                —
+            </div>
+        </div>
+
+
+        <div class="stat-card">
+            <div class="stat-label">
+                Average approval time
+            </div>
+
+            <div
+                id="approvalTime"
+                class="stat-value"
+            >
+                —
+            </div>
+        </div>
+
+
+        <div class="stat-card">
+            <div class="stat-label">
+                Average payment time
+            </div>
+
+            <div
+                id="paymentTime"
+                class="stat-value"
+            >
+                —
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="grid-3">
+
+        <div class="card">
+
+            <h2>Open amount</h2>
+
+            <div
+                id="openAmounts"
+                class="amount-list"
+            ></div>
+
+        </div>
+
+
+        <div class="card">
+
+            <h2>Paid this month</h2>
+
+            <div
+                id="paidThisMonth"
+                class="amount-list"
+            ></div>
+
+        </div>
+
+
+        <div class="card">
+
+            <h2>Attention</h2>
+
+            <div
+                id="attentionCount"
+                class="money-large"
+            >
+                —
+            </div>
+
+            <p class="muted">
+                Invalid, duplicate or
+                overdue invoices.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2>Supplier spend</h2>
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Supplier</th>
+                        <th>Currency</th>
+                        <th>Invoices</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+
+                <tbody
+                    id="supplierTable"
+                ></tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2>
+            Paid by month
+        </h2>
+
+        <p class="muted">
+            Last twelve months of recorded payments.
+        </p>
+
+        <div
+            id="monthlyChart"
+        ></div>
+
+    </div>
+
+</main>
+
+
+<script>
+
+function formatMoney(
+    value,
+    currency
+) {
+    return (
+        `${currency || ""} `
+        + Number(value).toLocaleString(
+            undefined,
+            {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }
+        )
+    ).trim();
+}
+
+
+function renderAmounts(
+    elementId,
+    amounts
+) {
+    const container =
+        document.getElementById(
+            elementId
+        );
+
+
+    if (
+        !amounts
+        || amounts.length === 0
+    ) {
+        container.innerHTML = `
+            <span class="muted">
+                No data yet.
+            </span>
+        `;
+
+        return;
+    }
+
+
+    container.innerHTML =
+        amounts.map(
+            item => `
+                <div class="amount-row">
+
+                    <div>
+                        <div class="amount-value">
+                            ${formatMoney(
+                                item.amount,
+                                item.currency
+                            )}
+                        </div>
+
+                        <div class="muted">
+                            ${item.invoice_count}
+                            invoice(s)
+                        </div>
+                    </div>
+
+                </div>
+            `
+        ).join("");
+}
+
+
+function renderSuppliers(
+    suppliers
+) {
+    const body =
+        document.getElementById(
+            "supplierTable"
+        );
+
+
+    body.innerHTML =
+        suppliers.map(
+            supplier => `
+                <tr>
+
+                    <td>
+                        ${supplier.supplier_name}
+                    </td>
+
+                    <td>
+                        ${supplier.currency}
+                    </td>
+
+                    <td>
+                        ${supplier.invoice_count}
+                    </td>
+
+                    <td>
+                        ${formatMoney(
+                            supplier.total_amount,
+                            supplier.currency
+                        )}
+                    </td>
+
+                </tr>
+            `
+        ).join("");
+}
+
+
+function renderMonthly(
+    monthly
+) {
+    const container =
+        document.getElementById(
+            "monthlyChart"
+        );
+
+
+    if (
+        !monthly
+        || monthly.length === 0
+    ) {
+        container.innerHTML = `
+            <span class="muted">
+                No recorded payments yet.
+            </span>
+        `;
+
+        return;
+    }
+
+
+    const maximum =
+        Math.max(
+            ...monthly.map(
+                item =>
+                    Number(
+                        item.amount
+                    )
+            )
+        );
+
+
+    container.innerHTML =
+        monthly.map(
+            item => {
+
+                const percentage =
+                    maximum > 0
+                    ? (
+                        Number(
+                            item.amount
+                        )
+                        / maximum
+                        * 100
+                    )
+                    : 0;
+
+
+                return `
+                    <div class="bar-row">
+
+                        <div class="bar-header">
+
+                            <span>
+                                ${item.month}
+                                ·
+                                ${item.currency}
+                            </span>
+
+                            <strong>
+                                ${formatMoney(
+                                    item.amount,
+                                    item.currency
+                                )}
+                            </strong>
+
+                        </div>
+
+                        <div class="bar-track">
+
+                            <div
+                                class="bar-fill"
+                                style="
+                                    width:
+                                    ${percentage}%;
+                                "
+                            ></div>
+
+                        </div>
+
+                    </div>
+                `;
+            }
+        ).join("");
+}
+
+
+async function loadAnalytics() {
+
+    const response =
+        await fetch(
+            "/api/analytics/summary"
+        );
+
+
+    if (!response.ok) {
+        return;
+    }
+
+
+    const data =
+        await response.json();
+
+
+    document.getElementById(
+        "totalInvoices"
+    ).textContent =
+        data.total_invoices;
+
+
+    document.getElementById(
+        "overdueInvoices"
+    ).textContent =
+        data.overdue_invoices;
+
+
+    document.getElementById(
+        "approvalTime"
+    ).textContent =
+        data.average_days_to_approval
+        === null
+        ? "—"
+        : (
+            data.average_days_to_approval
+            + " days"
+        );
+
+
+    document.getElementById(
+        "paymentTime"
+    ).textContent =
+        data.average_days_to_payment
+        === null
+        ? "—"
+        : (
+            data.average_days_to_payment
+            + " days"
+        );
+
+
+    document.getElementById(
+        "attentionCount"
+    ).textContent =
+        data.requires_attention;
+
+
+    renderAmounts(
+        "openAmounts",
+        data.open_amounts
+    );
+
+
+    renderAmounts(
+        "paidThisMonth",
+        data.paid_this_month
+    );
+
+
+    renderSuppliers(
+        data.supplier_totals
+    );
+
+
+    renderMonthly(
+        data.monthly_paid
+    );
+}
+
+
+loadAnalytics();
+
+</script>
+
+</body>
+
+</html>
