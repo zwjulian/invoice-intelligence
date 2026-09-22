@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Invoice Intelligence</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 50px auto;
+            padding: 0 20px;
+        }
+
+        .header {
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            margin-bottom: 8px;
+            font-size: 32px;
+        }
+
+        .header p {
+            margin: 0;
+            color: #6b7280;
+        }
+
+        .upload-card,
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+        }
+
+        .upload-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        input[type="file"] {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        button {
+            border: none;
+            background: #2563eb;
+            color: white;
+            padding: 11px 20px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: default;
+        }
+
+        .status {
+            margin-top: 15px;
+            color: #6b7280;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .field {
+            margin-bottom: 12px;
+        }
+
+        .label {
+            display: block;
+            color: #6b7280;
+            font-size: 13px;
+            margin-bottom: 3px;
+        }
+
+        .value {
+            font-weight: 600;
+        }
+
+        .success {
+            color: #15803d;
+            font-weight: 600;
+        }
+
+        .warning {
+            color: #b45309;
+            font-weight: 600;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th,
+        td {
+            padding: 11px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .money {
+            text-align: right;
+        }
+
+        .totals {
+            max-width: 400px;
+            margin-left: auto;
+            margin-top: 20px;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+        }
+
+        .grand-total {
+            font-size: 20px;
+            font-weight: bold;
+            border-top: 2px solid #e5e7eb;
+            margin-top: 6px;
+            padding-top: 12px;
+        }
+
+        .meta {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        @media (max-width: 700px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <h1>Invoice Intelligence</h1>
+        <p>
+            Upload an invoice PDF and automatically extract and validate
+            the invoice information.
+        </p>
+    </div>
+
+    <div class="upload-card">
+        <div class="upload-row">
+            <input
+                id="fileInput"
+                type="file"
+                accept="application/pdf"
+            >
+
+            <button
+                id="uploadButton"
+                onclick="uploadInvoice()"
+            >
+                Extract invoice
+            </button>
+        </div>
+
+        <div
+            id="status"
+            class="status"
+        ></div>
+    </div>
+
+    <div
+        id="results"
+        class="hidden"
+    >
+
+        <div class="card">
+
+            <div class="meta">
+                <span id="filename"></span>
+                <span id="method"></span>
+                <span id="validation"></span>
+            </div>
+
+        </div>
+
+        <div class="grid">
+
+            <div class="card">
+                <h2>Invoice</h2>
+
+                <div class="field">
+                    <span class="label">
+                        Invoice number
+                    </span>
+
+                    <span
+                        id="invoiceNumber"
+                        class="value"
+                    ></span>
+                </div>
+
+                <div class="field">
+                    <span class="label">
+                        Invoice date
+                    </span>
+
+                    <span
+                        id="invoiceDate"
+                        class="value"
+                    ></span>
+                </div>
+
+                <div class="field">
+                    <span class="label">
+                        Due date
+                    </span>
+
+                    <span
+                        id="dueDate"
+                        class="value"
+                    ></span>
+                </div>
+
+                <div class="field">
+                    <span class="label">
+                        Currency
+                    </span>
+
+                    <span
+                        id="currency"
+                        class="value"
+                    ></span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Supplier</h2>
+
+                <div class="field">
+                    <span class="label">Name</span>
+                    <span id="supplierName" class="value"></span>
+                </div>
+
+                <div class="field">
+                    <span class="label">Address</span>
+                    <span id="supplierAddress"></span>
+                </div>
+
+                <div class="field">
+                    <span class="label">VAT number</span>
+                    <span id="supplierVat"></span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Customer</h2>
+
+                <div class="field">
+                    <span class="label">Name</span>
+                    <span id="customerName" class="value"></span>
+                </div>
+
+                <div class="field">
+                    <span class="label">Address</span>
+                    <span id="customerAddress"></span>
+                </div>
+
+                <div class="field">
+                    <span class="label">VAT number</span>
+                    <span id="customerVat"></span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Validation</h2>
+
+                <div id="warnings"></div>
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <h2>Line items</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Quantity</th>
+                        <th>Unit price</th>
+                        <th>VAT</th>
+                        <th class="money">Total</th>
+                    </tr>
+                </thead>
+
+                <tbody id="lineItems"></tbody>
+            </table>
+
+            <div class="totals">
+
+                <div class="total-row">
+                    <span>Subtotal</span>
+                    <span id="subtotal"></span>
+                </div>
+
+                <div class="total-row">
+                    <span>VAT</span>
+                    <span id="vatAmount"></span>
+                </div>
+
+                <div class="total-row grand-total">
+                    <span>Total</span>
+                    <span id="totalAmount"></span>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div
+            id="vatCard"
+            class="card"
+        >
+            <h2>VAT breakdown</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rate</th>
+                        <th>Taxable amount</th>
+                        <th>VAT amount</th>
+                    </tr>
+                </thead>
+
+                <tbody id="vatBreakdown"></tbody>
+            </table>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+function displayValue(value) {
+    if (
+        value === null ||
+        value === undefined ||
+        value === ""
+    ) {
+        return "—";
+    }
+
+    return value;
+}
+
+
+function formatMoney(value, currency) {
+    if (
+        value === null ||
+        value === undefined
+    ) {
+        return "—";
+    }
+
+    return `${currency || ""} ${value}`.trim();
+}
+
+
+async function uploadInvoice() {
+
+    const fileInput =
+        document.getElementById("fileInput");
+
+    const button =
+        document.getElementById("uploadButton");
+
+    const status =
+        document.getElementById("status");
+
+    const results =
+        document.getElementById("results");
+
+
+    if (!fileInput.files.length) {
+        status.textContent =
+            "Please select a PDF first.";
+
+        return;
+    }
+
+
+    const formData = new FormData();
+
+    formData.append(
+        "file",
+        fileInput.files[0]
+    );
+
+
+    status.textContent =
+        "Processing invoice...";
+
+    button.disabled = true;
+
+    results.classList.add(
+        "hidden"
+    );
+
+
+    try {
+
+        const response = await fetch(
+            "/invoices/extract",
+            {
+                method: "POST",
+                body: formData
+            }
+        );
+
+
+        if (!response.ok) {
+
+            const errorData =
+                await response.json();
+
+            throw new Error(
+                errorData.detail ||
+                "Invoice extraction failed."
+            );
+        }
+
+
+        const data =
+            await response.json();
+
+        renderInvoice(data);
+
+        status.textContent =
+            "Invoice processed successfully.";
+
+    }
+
+    catch (error) {
+
+        status.textContent =
+            `Error: ${error.message}`;
+
+    }
+
+    finally {
+
+        button.disabled = false;
+
+    }
+}
+
+
+function renderInvoice(data) {
+
+    const invoice =
+        data.invoice;
+
+    const currency =
+        invoice.currency || "";
+
+
+    document.getElementById(
+        "filename"
+    ).textContent =
+        `File: ${data.filename}`;
+
+
+    document.getElementById(
+        "method"
+    ).textContent =
+        `Extraction: ${data.extraction_method}`;
+
+
+    const validation =
+        document.getElementById(
+            "validation"
+        );
+
+
+    if (data.valid) {
+
+        validation.textContent =
+            "✓ Valid invoice";
+
+        validation.className =
+            "success";
+
+    }
+
+    else {
+
+        validation.textContent =
+            "⚠ Validation warnings";
+
+        validation.className =
+            "warning";
+
+    }
+
+
+    document.getElementById(
+        "invoiceNumber"
+    ).textContent =
+        displayValue(
+            invoice.invoice_number
+        );
+
+
+    document.getElementById(
+        "invoiceDate"
+    ).textContent =
+        displayValue(
+            invoice.invoice_date
+        );
+
+
+    document.getElementById(
+        "dueDate"
+    ).textContent =
+        displayValue(
+            invoice.due_date
+        );
+
+
+    document.getElementById(
+        "currency"
+    ).textContent =
+        displayValue(
+            invoice.currency
+        );
+
+
+    document.getElementById(
+        "supplierName"
+    ).textContent =
+        displayValue(
+            invoice.supplier?.name
+        );
+
+
+    document.getElementById(
+        "supplierAddress"
+    ).textContent =
+        displayValue(
+            invoice.supplier?.address
+        );
+
+
+    document.getElementById(
+        "supplierVat"
+    ).textContent =
+        displayValue(
+            invoice.supplier?.vat_number
+        );
+
+
+    document.getElementById(
+        "customerName"
+    ).textContent =
+        displayValue(
+            invoice.customer?.name
+        );
+
+
+    document.getElementById(
+        "customerAddress"
+    ).textContent =
+        displayValue(
+            invoice.customer?.address
+        );
+
+
+    document.getElementById(
+        "customerVat"
+    ).textContent =
+        displayValue(
+            invoice.customer?.vat_number
+        );
+
+
+    document.getElementById(
+        "subtotal"
+    ).textContent =
+        formatMoney(
+            invoice.subtotal,
+            currency
+        );
+
+
+    document.getElementById(
+        "vatAmount"
+    ).textContent =
+        formatMoney(
+            invoice.vat_amount,
+            currency
+        );
+
+
+    document.getElementById(
+        "totalAmount"
+    ).textContent =
+        formatMoney(
+            invoice.total_amount,
+            currency
+        );
+
+
+    const warningContainer =
+        document.getElementById(
+            "warnings"
+        );
+
+
+    warningContainer.innerHTML = "";
+
+
+    if (
+        !data.warnings ||
+        data.warnings.length === 0
+    ) {
+
+        warningContainer.innerHTML =
+            '<span class="success">No validation warnings.</span>';
+
+    }
+
+    else {
+
+        for (
+            const warning
+            of data.warnings
+        ) {
+
+            const paragraph =
+                document.createElement(
+                    "p"
+                );
+
+            paragraph.className =
+                "warning";
+
+            paragraph.textContent =
+                warning;
+
+            warningContainer.appendChild(
+                paragraph
+            );
+        }
+    }
+
+
+    const lineItems =
+        document.getElementById(
+            "lineItems"
+        );
+
+    lineItems.innerHTML = "";
+
+
+    for (
+        const item
+        of invoice.line_items || []
+    ) {
+
+        const row =
+            document.createElement(
+                "tr"
+            );
+
+        row.innerHTML = `
+            <td>${displayValue(item.description)}</td>
+            <td>${displayValue(item.quantity)}</td>
+            <td>${formatMoney(item.unit_price, currency)}</td>
+            <td>${displayValue(item.vat_rate)}%</td>
+            <td class="money">${formatMoney(item.total, currency)}</td>
+        `;
+
+        lineItems.appendChild(
+            row
+        );
+    }
+
+
+    const vatBody =
+        document.getElementById(
+            "vatBreakdown"
+        );
+
+    const vatCard =
+        document.getElementById(
+            "vatCard"
+        );
+
+    vatBody.innerHTML = "";
+
+
+    if (
+        !invoice.vat_breakdown ||
+        invoice.vat_breakdown.length === 0
+    ) {
+
+        vatCard.classList.add(
+            "hidden"
+        );
+
+    }
+
+    else {
+
+        vatCard.classList.remove(
+            "hidden"
+        );
+
+        for (
+            const vat
+            of invoice.vat_breakdown
+        ) {
+
+            const row =
+                document.createElement(
+                    "tr"
+                );
+
+            row.innerHTML = `
+                <td>${vat.rate}%</td>
+                <td>${formatMoney(vat.taxable_amount, currency)}</td>
+                <td>${formatMoney(vat.vat_amount, currency)}</td>
+            `;
+
+            vatBody.appendChild(
+                row
+            );
+        }
+    }
+
+
+    document.getElementById(
+        "results"
+    ).classList.remove(
+        "hidden"
+    );
+}
+
+</script>
+
+</body>
+</html>

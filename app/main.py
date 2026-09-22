@@ -3,6 +3,7 @@ from tempfile import NamedTemporaryFile
 from typing import Annotated
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi.responses import HTMLResponse
 
 from app.core.config import settings
 from app.models.invoice import Invoice
@@ -27,7 +28,14 @@ app = FastAPI(
         "Extract structured invoice data from PDF files "
         "using text or multimodal LLM processing."
     ),
-    version="0.2.0",
+    version="0.3.0",
+)
+
+
+FRONTEND_PATH = (
+    Path(__file__).resolve().parent
+    / "static"
+    / "index.html"
 )
 
 
@@ -41,6 +49,21 @@ if settings.use_mock_llm:
     extractor = MockInvoiceExtractor()
 else:
     extractor = GeminiInvoiceExtractor()
+
+
+@app.get(
+    "/",
+    response_class=HTMLResponse,
+    include_in_schema=False,
+)
+def frontend() -> HTMLResponse:
+    html = FRONTEND_PATH.read_text(
+        encoding="utf-8"
+    )
+
+    return HTMLResponse(
+        content=html
+    )
 
 
 @app.get("/health")
