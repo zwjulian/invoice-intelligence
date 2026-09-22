@@ -13,6 +13,11 @@ __pycache__/
 *.pyo
 *.pyd
 
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
 # Testing
 .pytest_cache/
 .coverage

@@ -2,20 +2,38 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import Annotated
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import (
+    FastAPI,
+    File,
+    HTTPException,
+    Query,
+    UploadFile,
+)
 from fastapi.responses import HTMLResponse
 
 from app.core.config import settings
+from app.database import init_db
 from app.models.invoice import Invoice
+from app.models.stored_invoice import (
+    StoredInvoiceDetail,
+    StoredInvoiceSummary,
+)
 from app.services.llm_service import (
     GeminiInvoiceExtractor,
     InvoiceExtractionError,
 )
-from app.services.mock_llm_service import MockInvoiceExtractor
+from app.services.mock_llm_service import (
+    MockInvoiceExtractor,
+)
 from app.services.pdf_service import (
     PDFExtractionError,
     extract_text_from_pdf,
     render_pdf_pages_as_png,
+)
+from app.services.storage_service import (
+    get_stored_invoice,
+    list_stored_invoices,
+    store_invoice,
 )
 from app.services.validation_service import (
     ValidationResult,
@@ -25,10 +43,10 @@ from app.services.validation_service import (
 app = FastAPI(
     title="Invoice Intelligence API",
     description=(
-        "Extract structured invoice data from PDF files "
-        "using text or multimodal LLM processing."
+        "Extract, validate and store "
+        "structured invoice information."
     ),
-    version="0.3.0",
+    version="0.4.0",
 )
 
 
@@ -39,16 +57,33 @@ FRONTEND_PATH = (
 )
 
 
-class InvoiceAPIResponse(ValidationResult):
+class InvoiceAPIResponse(
+    ValidationResult
+):
     filename: str
+
     extraction_method: str
+
     invoice: Invoice
+
+    database_id: int
+
+    duplicate: bool
+
+    duplicate_of_id: int | None
 
 
 if settings.use_mock_llm:
-    extractor = MockInvoiceExtractor()
+    extractor = (
+        MockInvoiceExtractor()
+    )
 else:
-    extractor = GeminiInvoiceExtractor()
+    extractor = (
+        GeminiInvoiceExtractor()
+    )
+
+
+init_db()
 
 
 @app.get(
@@ -57,8 +92,10 @@ else:
     include_in_schema=False,
 )
 def frontend() -> HTMLResponse:
-    html = FRONTEND_PATH.read_text(
-        encoding="utf-8"
+    html = (
+        FRONTEND_PATH.read_text(
+            encoding="utf-8"
+        )
     )
 
     return HTMLResponse(
@@ -67,16 +104,87 @@ def frontend() -> HTMLResponse:
 
 
 @app.get("/health")
-def health_check() -> dict[str, str | bool]:
+def health_check() -> dict[
+    str,
+    str | bool,
+]:
     return {
         "status": "healthy",
-        "mock_llm": settings.use_mock_llm,
+        "mock_llm": (
+            settings.use_mock_llm
+        ),
     }
+
+
+@app.get(
+    "/invoices",
+    response_model=list[
+        StoredInvoiceSummary
+    ],
+)
+def invoices(
+    limit: Annotated[
+        int,
+        Query(
+            ge=1,
+            le=500,
+        ),
+    ] = 100,
+) -> list[
+    StoredInvoiceSummary
+]:
+    stored_invoices = (
+        list_stored_invoices(
+            limit=limit
+        )
+    )
+
+    return [
+        StoredInvoiceSummary
+        .model_validate(
+            invoice
+        )
+        for invoice
+        in stored_invoices
+    ]
+
+
+@app.get(
+    "/invoices/{invoice_id}",
+    response_model=(
+        StoredInvoiceDetail
+    ),
+)
+def invoice_detail(
+    invoice_id: int,
+) -> StoredInvoiceDetail:
+    stored_invoice = (
+        get_stored_invoice(
+            invoice_id
+        )
+    )
+
+    if stored_invoice is None:
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                "Invoice not found."
+            ),
+        )
+
+    return (
+        StoredInvoiceDetail
+        .model_validate(
+            stored_invoice
+        )
+    )
 
 
 @app.post(
     "/invoices/extract",
-    response_model=InvoiceAPIResponse,
+    response_model=(
+        InvoiceAPIResponse
+    ),
 )
 async def extract_invoice(
     file: Annotated[
@@ -84,10 +192,16 @@ async def extract_invoice(
         File(),
     ],
 ) -> InvoiceAPIResponse:
-    if file.content_type != "application/pdf":
+    if (
+        file.content_type
+        != "application/pdf"
+    ):
         raise HTTPException(
             status_code=400,
-            detail="Only PDF files are supported.",
+            detail=(
+                "Only PDF files "
+                "are supported."
+            ),
         )
 
     pdf_bytes = await file.read()
@@ -107,19 +221,27 @@ async def extract_invoice(
                 temp_file.name
             )
 
-        invoice_text = extract_text_from_pdf(
-            temp_path
+        invoice_text = (
+            extract_text_from_pdf(
+                temp_path
+            )
         )
 
         if invoice_text.strip():
-            extraction_method = "text"
+            extraction_method = (
+                "text"
+            )
 
-            invoice = extractor.extract(
-                invoice_text
+            invoice = (
+                extractor.extract(
+                    invoice_text
+                )
             )
 
         else:
-            extraction_method = "vision"
+            extraction_method = (
+                "vision"
+            )
 
             page_images = (
                 render_pdf_pages_as_png(
@@ -128,26 +250,58 @@ async def extract_invoice(
             )
 
             invoice = (
-                extractor.extract_from_images(
+                extractor
+                .extract_from_images(
                     page_images
                 )
             )
 
-        validation = validate_invoice(
-            invoice
+        validation = (
+            validate_invoice(
+                invoice
+            )
+        )
+
+        filename = (
+            file.filename
+            or "unknown.pdf"
+        )
+
+        stored_invoice = (
+            store_invoice(
+                filename=filename,
+                extraction_method=(
+                    extraction_method
+                ),
+                invoice=invoice,
+                validation=validation,
+            )
+        )
+
+        duplicate = (
+            stored_invoice
+            .duplicate_of_id
+            is not None
         )
 
         return InvoiceAPIResponse(
-            filename=(
-                file.filename
-                or "unknown.pdf"
-            ),
+            filename=filename,
             extraction_method=(
                 extraction_method
             ),
             invoice=invoice,
             valid=validation.valid,
-            warnings=validation.warnings,
+            warnings=(
+                validation.warnings
+            ),
+            database_id=(
+                stored_invoice.id
+            ),
+            duplicate=duplicate,
+            duplicate_of_id=(
+                stored_invoice
+                .duplicate_of_id
+            ),
         )
 
     except PDFExtractionError as exc:
