@@ -58,6 +58,14 @@ class StoredInvoiceSummary(
 
     created_at: datetime
 
+    status_updated_at: (
+        datetime | None
+    )
+
+    approved_at: datetime | None
+
+    paid_at: datetime | None
+
 
 class StoredInvoiceDetail(
     StoredInvoiceSummary

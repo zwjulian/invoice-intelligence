@@ -1,7 +1,7 @@
 from datetime import (
+    UTC,
     date,
     datetime,
-    timezone,
 )
 from decimal import Decimal
 
@@ -37,11 +37,9 @@ class StoredInvoice(Base):
         nullable=False,
     )
 
-    extraction_method: Mapped[str] = (
-        mapped_column(
-            String(20),
-            nullable=False,
-        )
+    extraction_method: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
     )
 
     status: Mapped[str] = mapped_column(
@@ -131,19 +129,15 @@ class StoredInvoice(Base):
         nullable=False,
     )
 
-    warnings: Mapped[list[str]] = (
-        mapped_column(
-            JSON,
-            nullable=False,
-            default=list,
-        )
+    warnings: Mapped[list[str]] = mapped_column(
+        JSON,
+        nullable=False,
+        default=list,
     )
 
-    invoice_data: Mapped[dict] = (
-        mapped_column(
-            JSON,
-            nullable=False,
-        )
+    invoice_data: Mapped[dict] = mapped_column(
+        JSON,
+        nullable=False,
     )
 
     duplicate_of_id: Mapped[
@@ -163,6 +157,36 @@ class StoredInvoice(Base):
         ),
         nullable=False,
         default=lambda: datetime.now(
-            timezone.utc
+            UTC
         ),
+    )
+
+    status_updated_at: Mapped[
+        datetime | None
+    ] = mapped_column(
+        DateTime(
+            timezone=True
+        ),
+        nullable=True,
+        default=lambda: datetime.now(
+            UTC
+        ),
+    )
+
+    approved_at: Mapped[
+        datetime | None
+    ] = mapped_column(
+        DateTime(
+            timezone=True
+        ),
+        nullable=True,
+    )
+
+    paid_at: Mapped[
+        datetime | None
+    ] = mapped_column(
+        DateTime(
+            timezone=True
+        ),
+        nullable=True,
     )
