@@ -520,7 +520,7 @@ Clone the repository:
 
 ```bash
 
-git clone https://github.com/YOUR\_USERNAME/invoice-intelligence.git
+git clone https://github.com/zwjulian/invoice-intelligence.git
 
 cd invoice-intelligence
 
