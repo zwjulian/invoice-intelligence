@@ -15,6 +15,7 @@ from app.core.config import settings
 from app.database import init_db
 from app.models.invoice import Invoice
 from app.models.stored_invoice import (
+    InvoiceStatusUpdate,
     StoredInvoiceDetail,
     StoredInvoiceSummary,
 )
@@ -34,6 +35,7 @@ from app.services.storage_service import (
     get_stored_invoice,
     list_stored_invoices,
     store_invoice,
+    update_invoice_status,
 )
 from app.services.validation_service import (
     ValidationResult,
@@ -43,10 +45,10 @@ from app.services.validation_service import (
 app = FastAPI(
     title="Invoice Intelligence API",
     description=(
-        "Extract, validate and store "
+        "Extract, validate, store and manage "
         "structured invoice information."
     ),
-    version="0.4.0",
+    version="0.5.0",
 )
 
 
@@ -176,6 +178,88 @@ def invoice_detail(
         StoredInvoiceDetail
         .model_validate(
             stored_invoice
+        )
+    )
+
+
+@app.patch(
+    "/invoices/{invoice_id}/status",
+    response_model=(
+        StoredInvoiceSummary
+    ),
+)
+def change_invoice_status(
+    invoice_id: int,
+    update: InvoiceStatusUpdate,
+) -> StoredInvoiceSummary:
+    stored_invoice = (
+        get_stored_invoice(
+            invoice_id
+        )
+    )
+
+    if stored_invoice is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Invoice not found.",
+        )
+
+    current_status = (
+        stored_invoice.status
+    )
+
+    requested_status = (
+        update.status
+    )
+
+    allowed_transitions = {
+        "new": {
+            "approved",
+        },
+        "approved": {
+            "new",
+            "paid",
+        },
+        "paid": {
+            "approved",
+        },
+    }
+
+    if (
+        requested_status
+        != current_status
+        and requested_status
+        not in allowed_transitions.get(
+            current_status,
+            set(),
+        )
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Invalid status transition "
+                f"from '{current_status}' "
+                f"to '{requested_status}'."
+            ),
+        )
+
+    updated_invoice = (
+        update_invoice_status(
+            invoice_id=invoice_id,
+            status=requested_status,
+        )
+    )
+
+    if updated_invoice is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Invoice not found.",
+        )
+
+    return (
+        StoredInvoiceSummary
+        .model_validate(
+            updated_invoice
         )
     )
 

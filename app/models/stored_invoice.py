@@ -3,11 +3,24 @@ from datetime import (
     datetime,
 )
 from decimal import Decimal
+from typing import Literal
 
 from pydantic import (
     BaseModel,
     ConfigDict,
 )
+
+InvoiceStatus = Literal[
+    "new",
+    "approved",
+    "paid",
+]
+
+
+class InvoiceStatusUpdate(
+    BaseModel
+):
+    status: InvoiceStatus
 
 
 class StoredInvoiceSummary(

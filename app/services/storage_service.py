@@ -160,3 +160,27 @@ def get_stored_invoice(
             StoredInvoice,
             invoice_id,
         )
+
+
+def update_invoice_status(
+    invoice_id: int,
+    status: str,
+) -> StoredInvoice | None:
+    with SessionLocal() as session:
+        invoice = session.get(
+            StoredInvoice,
+            invoice_id,
+        )
+
+        if invoice is None:
+            return None
+
+        invoice.status = status
+
+        session.commit()
+
+        session.refresh(
+            invoice
+        )
+
+        return invoice
