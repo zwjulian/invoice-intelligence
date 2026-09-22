@@ -19,32 +19,29 @@
         }
 
         .container {
-            max-width: 1100px;
-            margin: 50px auto;
+            max-width: 1200px;
+            margin: 40px auto;
             padding: 0 20px;
         }
 
-        .header {
+        h1,
+        h2,
+        h3 {
+            margin-top: 0;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            margin-top: -8px;
             margin-bottom: 30px;
         }
 
-        .header h1 {
-            margin-bottom: 8px;
-            font-size: 32px;
-        }
-
-        .header p {
-            margin: 0;
-            color: #6b7280;
-        }
-
-        .upload-card,
         .card {
             background: white;
             border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 20px;
+            padding: 22px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+            margin-bottom: 20px;
         }
 
         .upload-row {
@@ -63,10 +60,10 @@
             border: none;
             background: #2563eb;
             color: white;
-            padding: 11px 20px;
+            padding: 11px 18px;
             border-radius: 7px;
             cursor: pointer;
-            font-size: 15px;
+            font-size: 14px;
         }
 
         button:hover {
@@ -78,103 +75,159 @@
             cursor: default;
         }
 
-        .status {
-            margin-top: 15px;
+        .status-text {
+            margin-top: 14px;
             color: #6b7280;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        th {
+            color: #6b7280;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .badge-new {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .badge-valid {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .badge-invalid {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .badge-duplicate {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .badge-overdue {
+            background: #fee2e2;
+            color: #b91c1c;
         }
 
         .hidden {
             display: none;
         }
 
-        .grid {
+        .detail-grid {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(2, 1fr);
             gap: 20px;
         }
 
-        .field {
-            margin-bottom: 12px;
-        }
-
         .label {
-            display: block;
             color: #6b7280;
-            font-size: 13px;
+            font-size: 12px;
             margin-bottom: 3px;
         }
 
         .value {
+            margin-bottom: 14px;
             font-weight: 600;
         }
 
-        .success {
-            color: #15803d;
-            font-weight: 600;
-        }
-
-        .warning {
-            color: #b45309;
-            font-weight: 600;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        th,
-        td {
-            padding: 11px;
-            text-align: left;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        th {
-            color: #6b7280;
-            font-size: 13px;
-        }
-
-        .money {
-            text-align: right;
-        }
-
-        .totals {
-            max-width: 400px;
-            margin-left: auto;
+        .line-table {
             margin-top: 20px;
         }
 
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 6px 0;
+        .close-button {
+            float: right;
+            background: #6b7280;
         }
 
-        .grand-total {
-            font-size: 20px;
-            font-weight: bold;
-            border-top: 2px solid #e5e7eb;
-            margin-top: 6px;
-            padding-top: 12px;
+        .close-button:hover {
+            background: #4b5563;
         }
 
-        .meta {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            color: #6b7280;
-            font-size: 13px;
+        .duplicate-warning {
+            background: #fffbeb;
+            color: #92400e;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 18px;
         }
 
-        @media (max-width: 700px) {
-            .grid {
-                grid-template-columns: 1fr;
+        .success-box {
+            background: #ecfdf5;
+            color: #166534;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 850px) {
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
             }
 
-            table {
-                font-size: 13px;
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .stats {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -184,15 +237,15 @@
 
 <div class="container">
 
-    <div class="header">
-        <h1>Invoice Intelligence</h1>
-        <p>
-            Upload an invoice PDF and automatically extract and validate
-            the invoice information.
-        </p>
-    </div>
+    <h1>Invoice Intelligence</h1>
 
-    <div class="upload-card">
+    <p class="subtitle">
+        AI-powered invoice extraction, validation and administration.
+    </p>
+
+    <div class="card">
+        <h2>Upload invoice</h2>
+
         <div class="upload-row">
             <input
                 id="fileInput"
@@ -204,192 +257,245 @@
                 id="uploadButton"
                 onclick="uploadInvoice()"
             >
-                Extract invoice
+                Process invoice
             </button>
         </div>
 
         <div
-            id="status"
-            class="status"
+            id="uploadStatus"
+            class="status-text"
+        ></div>
+
+        <div
+            id="uploadResult"
+            class="hidden"
         ></div>
     </div>
 
-    <div
-        id="results"
-        class="hidden"
-    >
+    <div class="stats">
 
-        <div class="card">
-
-            <div class="meta">
-                <span id="filename"></span>
-                <span id="method"></span>
-                <span id="validation"></span>
+        <div class="stat-card">
+            <div class="stat-label">
+                Total invoices
             </div>
 
+            <div
+                id="totalInvoices"
+                class="stat-value"
+            >
+                0
+            </div>
         </div>
 
-        <div class="grid">
-
-            <div class="card">
-                <h2>Invoice</h2>
-
-                <div class="field">
-                    <span class="label">
-                        Invoice number
-                    </span>
-
-                    <span
-                        id="invoiceNumber"
-                        class="value"
-                    ></span>
-                </div>
-
-                <div class="field">
-                    <span class="label">
-                        Invoice date
-                    </span>
-
-                    <span
-                        id="invoiceDate"
-                        class="value"
-                    ></span>
-                </div>
-
-                <div class="field">
-                    <span class="label">
-                        Due date
-                    </span>
-
-                    <span
-                        id="dueDate"
-                        class="value"
-                    ></span>
-                </div>
-
-                <div class="field">
-                    <span class="label">
-                        Currency
-                    </span>
-
-                    <span
-                        id="currency"
-                        class="value"
-                    ></span>
-                </div>
+        <div class="stat-card">
+            <div class="stat-label">
+                Valid invoices
             </div>
 
-            <div class="card">
-                <h2>Supplier</h2>
-
-                <div class="field">
-                    <span class="label">Name</span>
-                    <span id="supplierName" class="value"></span>
-                </div>
-
-                <div class="field">
-                    <span class="label">Address</span>
-                    <span id="supplierAddress"></span>
-                </div>
-
-                <div class="field">
-                    <span class="label">VAT number</span>
-                    <span id="supplierVat"></span>
-                </div>
+            <div
+                id="validInvoices"
+                class="stat-value"
+            >
+                0
             </div>
-
-            <div class="card">
-                <h2>Customer</h2>
-
-                <div class="field">
-                    <span class="label">Name</span>
-                    <span id="customerName" class="value"></span>
-                </div>
-
-                <div class="field">
-                    <span class="label">Address</span>
-                    <span id="customerAddress"></span>
-                </div>
-
-                <div class="field">
-                    <span class="label">VAT number</span>
-                    <span id="customerVat"></span>
-                </div>
-            </div>
-
-            <div class="card">
-                <h2>Validation</h2>
-
-                <div id="warnings"></div>
-            </div>
-
         </div>
 
-        <div class="card">
+        <div class="stat-card">
+            <div class="stat-label">
+                Duplicates
+            </div>
 
-            <h2>Line items</h2>
+            <div
+                id="duplicateInvoices"
+                class="stat-value"
+            >
+                0
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">
+                Overdue
+            </div>
+
+            <div
+                id="overdueInvoices"
+                class="stat-value"
+            >
+                0
+            </div>
+        </div>
+
+    </div>
+
+    <div class="card">
+        <h2>Stored invoices</h2>
+
+        <div class="table-wrapper">
 
             <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Supplier</th>
+                        <th>Invoice</th>
+                        <th>Due date</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Checks</th>
+                        <th></th>
+                    </tr>
+                </thead>
+
+                <tbody id="invoiceTable"></tbody>
+            </table>
+
+        </div>
+    </div>
+
+    <div
+        id="detailCard"
+        class="card hidden"
+    >
+        <button
+            class="close-button"
+            onclick="closeDetail()"
+        >
+            Close
+        </button>
+
+        <h2>Invoice details</h2>
+
+        <div
+            id="duplicateDetail"
+            class="hidden"
+        ></div>
+
+        <div class="detail-grid">
+
+            <div>
+                <h3>Invoice</h3>
+
+                <div class="label">
+                    Invoice number
+                </div>
+                <div
+                    id="detailInvoiceNumber"
+                    class="value"
+                ></div>
+
+                <div class="label">
+                    Invoice date
+                </div>
+                <div
+                    id="detailInvoiceDate"
+                    class="value"
+                ></div>
+
+                <div class="label">
+                    Due date
+                </div>
+                <div
+                    id="detailDueDate"
+                    class="value"
+                ></div>
+
+                <div class="label">
+                    Currency
+                </div>
+                <div
+                    id="detailCurrency"
+                    class="value"
+                ></div>
+            </div>
+
+            <div>
+                <h3>Supplier</h3>
+
+                <div class="label">
+                    Name
+                </div>
+                <div
+                    id="detailSupplier"
+                    class="value"
+                ></div>
+
+                <div class="label">
+                    Address
+                </div>
+                <div
+                    id="detailSupplierAddress"
+                    class="value"
+                ></div>
+
+                <div class="label">
+                    VAT number
+                </div>
+                <div
+                    id="detailSupplierVat"
+                    class="value"
+                ></div>
+            </div>
+
+        </div>
+
+        <h3>Line items</h3>
+
+        <div class="table-wrapper">
+            <table class="line-table">
                 <thead>
                     <tr>
                         <th>Description</th>
                         <th>Quantity</th>
                         <th>Unit price</th>
                         <th>VAT</th>
-                        <th class="money">Total</th>
+                        <th>Total</th>
                     </tr>
                 </thead>
 
-                <tbody id="lineItems"></tbody>
+                <tbody id="detailLineItems"></tbody>
             </table>
-
-            <div class="totals">
-
-                <div class="total-row">
-                    <span>Subtotal</span>
-                    <span id="subtotal"></span>
-                </div>
-
-                <div class="total-row">
-                    <span>VAT</span>
-                    <span id="vatAmount"></span>
-                </div>
-
-                <div class="total-row grand-total">
-                    <span>Total</span>
-                    <span id="totalAmount"></span>
-                </div>
-
-            </div>
-
         </div>
 
         <div
-            id="vatCard"
-            class="card"
+            style="
+                margin-top: 20px;
+                text-align: right;
+                font-size: 17px;
+            "
         >
-            <h2>VAT breakdown</h2>
+            <div>
+                Subtotal:
+                <strong id="detailSubtotal"></strong>
+            </div>
 
-            <table>
-                <thead>
-                    <tr>
-                        <th>Rate</th>
-                        <th>Taxable amount</th>
-                        <th>VAT amount</th>
-                    </tr>
-                </thead>
+            <div>
+                VAT:
+                <strong id="detailVat"></strong>
+            </div>
 
-                <tbody id="vatBreakdown"></tbody>
-            </table>
+            <div
+                style="
+                    font-size: 21px;
+                    margin-top: 8px;
+                "
+            >
+                Total:
+                <strong id="detailTotal"></strong>
+            </div>
         </div>
 
     </div>
 
 </div>
 
+
 <script>
 
-function displayValue(value) {
+let invoices = [];
+
+
+function valueOrDash(value) {
     if (
         value === null ||
         value === undefined ||
@@ -402,7 +508,10 @@ function displayValue(value) {
 }
 
 
-function formatMoney(value, currency) {
+function formatMoney(
+    value,
+    currency
+) {
     if (
         value === null ||
         value === undefined
@@ -414,30 +523,226 @@ function formatMoney(value, currency) {
 }
 
 
+function isOverdue(invoice) {
+    if (!invoice.due_date) {
+        return false;
+    }
+
+    if (
+        invoice.status === "paid"
+    ) {
+        return false;
+    }
+
+    const dueDate =
+        new Date(
+            `${invoice.due_date}T23:59:59`
+        );
+
+    return dueDate < new Date();
+}
+
+
+async function loadInvoices() {
+
+    const response =
+        await fetch(
+            "/invoices"
+        );
+
+    if (!response.ok) {
+        return;
+    }
+
+    invoices =
+        await response.json();
+
+    updateStats();
+
+    renderInvoiceTable();
+}
+
+
+function updateStats() {
+
+    document.getElementById(
+        "totalInvoices"
+    ).textContent =
+        invoices.length;
+
+
+    document.getElementById(
+        "validInvoices"
+    ).textContent =
+        invoices.filter(
+            invoice =>
+                invoice.valid
+        ).length;
+
+
+    document.getElementById(
+        "duplicateInvoices"
+    ).textContent =
+        invoices.filter(
+            invoice =>
+                invoice.duplicate_of_id
+                !== null
+        ).length;
+
+
+    document.getElementById(
+        "overdueInvoices"
+    ).textContent =
+        invoices.filter(
+            invoice =>
+                isOverdue(invoice)
+        ).length;
+}
+
+
+function renderInvoiceTable() {
+
+    const table =
+        document.getElementById(
+            "invoiceTable"
+        );
+
+    table.innerHTML = "";
+
+
+    for (
+        const invoice
+        of invoices
+    ) {
+
+        const row =
+            document.createElement(
+                "tr"
+            );
+
+
+        let checkBadges = "";
+
+
+        if (invoice.valid) {
+            checkBadges +=
+                '<span class="badge badge-valid">Valid</span> ';
+        }
+
+        else {
+            checkBadges +=
+                '<span class="badge badge-invalid">Review</span> ';
+        }
+
+
+        if (
+            invoice.duplicate_of_id
+            !== null
+        ) {
+            checkBadges +=
+                '<span class="badge badge-duplicate">Duplicate</span> ';
+        }
+
+
+        if (
+            isOverdue(invoice)
+        ) {
+            checkBadges +=
+                '<span class="badge badge-overdue">Overdue</span>';
+        }
+
+
+        row.innerHTML = `
+            <td>${invoice.id}</td>
+
+            <td>
+                ${valueOrDash(
+                    invoice.supplier_name
+                )}
+            </td>
+
+            <td>
+                ${valueOrDash(
+                    invoice.invoice_number
+                )}
+            </td>
+
+            <td>
+                ${valueOrDash(
+                    invoice.due_date
+                )}
+            </td>
+
+            <td>
+                ${formatMoney(
+                    invoice.total_amount,
+                    invoice.currency
+                )}
+            </td>
+
+            <td>
+                <span class="badge badge-new">
+                    ${invoice.status}
+                </span>
+            </td>
+
+            <td>
+                ${checkBadges}
+            </td>
+
+            <td>
+                <button
+                    onclick="showInvoice(
+                        ${invoice.id}
+                    )"
+                >
+                    View
+                </button>
+            </td>
+        `;
+
+        table.appendChild(
+            row
+        );
+    }
+}
+
+
 async function uploadInvoice() {
 
     const fileInput =
-        document.getElementById("fileInput");
+        document.getElementById(
+            "fileInput"
+        );
 
     const button =
-        document.getElementById("uploadButton");
+        document.getElementById(
+            "uploadButton"
+        );
 
     const status =
-        document.getElementById("status");
+        document.getElementById(
+            "uploadStatus"
+        );
 
-    const results =
-        document.getElementById("results");
+    const result =
+        document.getElementById(
+            "uploadResult"
+        );
 
 
-    if (!fileInput.files.length) {
+    if (
+        !fileInput.files.length
+    ) {
         status.textContent =
-            "Please select a PDF first.";
+            "Select a PDF first.";
 
         return;
     }
 
 
-    const formData = new FormData();
+    const formData =
+        new FormData();
 
     formData.append(
         "file",
@@ -445,46 +750,75 @@ async function uploadInvoice() {
     );
 
 
+    button.disabled = true;
+
     status.textContent =
         "Processing invoice...";
 
-    button.disabled = true;
-
-    results.classList.add(
+    result.classList.add(
         "hidden"
     );
 
 
     try {
 
-        const response = await fetch(
-            "/invoices/extract",
-            {
-                method: "POST",
-                body: formData
-            }
-        );
-
-
-        if (!response.ok) {
-
-            const errorData =
-                await response.json();
-
-            throw new Error(
-                errorData.detail ||
-                "Invoice extraction failed."
+        const response =
+            await fetch(
+                "/invoices/extract",
+                {
+                    method: "POST",
+                    body: formData
+                }
             );
-        }
 
 
         const data =
             await response.json();
 
-        renderInvoice(data);
 
-        status.textContent =
-            "Invoice processed successfully.";
+        if (!response.ok) {
+            throw new Error(
+                data.detail ||
+                "Extraction failed."
+            );
+        }
+
+
+        result.className =
+            "success-box";
+
+
+        if (data.duplicate) {
+
+            result.innerHTML = `
+                Invoice stored as
+                <strong>#${data.database_id}</strong>.
+                <br>
+                ⚠ This appears to be a duplicate
+                of invoice
+                <strong>#${data.duplicate_of_id}</strong>.
+            `;
+        }
+
+        else {
+
+            result.innerHTML = `
+                ✓ Invoice extracted and stored
+                successfully as
+                <strong>#${data.database_id}</strong>.
+            `;
+        }
+
+
+        status.textContent = "";
+
+        fileInput.value = "";
+
+        await loadInvoices();
+
+        await showInvoice(
+            data.database_id
+        );
 
     }
 
@@ -503,136 +837,89 @@ async function uploadInvoice() {
 }
 
 
-function renderInvoice(data) {
+async function showInvoice(
+    invoiceId
+) {
+
+    const response =
+        await fetch(
+            `/invoices/${invoiceId}`
+        );
+
+
+    if (!response.ok) {
+        return;
+    }
+
+
+    const stored =
+        await response.json();
 
     const invoice =
-        data.invoice;
+        stored.invoice_data;
 
     const currency =
         invoice.currency || "";
 
 
     document.getElementById(
-        "filename"
+        "detailInvoiceNumber"
     ).textContent =
-        `File: ${data.filename}`;
-
-
-    document.getElementById(
-        "method"
-    ).textContent =
-        `Extraction: ${data.extraction_method}`;
-
-
-    const validation =
-        document.getElementById(
-            "validation"
-        );
-
-
-    if (data.valid) {
-
-        validation.textContent =
-            "✓ Valid invoice";
-
-        validation.className =
-            "success";
-
-    }
-
-    else {
-
-        validation.textContent =
-            "⚠ Validation warnings";
-
-        validation.className =
-            "warning";
-
-    }
-
-
-    document.getElementById(
-        "invoiceNumber"
-    ).textContent =
-        displayValue(
+        valueOrDash(
             invoice.invoice_number
         );
 
 
     document.getElementById(
-        "invoiceDate"
+        "detailInvoiceDate"
     ).textContent =
-        displayValue(
+        valueOrDash(
             invoice.invoice_date
         );
 
 
     document.getElementById(
-        "dueDate"
+        "detailDueDate"
     ).textContent =
-        displayValue(
+        valueOrDash(
             invoice.due_date
         );
 
 
     document.getElementById(
-        "currency"
+        "detailCurrency"
     ).textContent =
-        displayValue(
+        valueOrDash(
             invoice.currency
         );
 
 
     document.getElementById(
-        "supplierName"
+        "detailSupplier"
     ).textContent =
-        displayValue(
+        valueOrDash(
             invoice.supplier?.name
         );
 
 
     document.getElementById(
-        "supplierAddress"
+        "detailSupplierAddress"
     ).textContent =
-        displayValue(
+        valueOrDash(
             invoice.supplier?.address
         );
 
 
     document.getElementById(
-        "supplierVat"
+        "detailSupplierVat"
     ).textContent =
-        displayValue(
+        valueOrDash(
             invoice.supplier?.vat_number
         );
 
 
     document.getElementById(
-        "customerName"
-    ).textContent =
-        displayValue(
-            invoice.customer?.name
-        );
-
-
-    document.getElementById(
-        "customerAddress"
-    ).textContent =
-        displayValue(
-            invoice.customer?.address
-        );
-
-
-    document.getElementById(
-        "customerVat"
-    ).textContent =
-        displayValue(
-            invoice.customer?.vat_number
-        );
-
-
-    document.getElementById(
-        "subtotal"
+        "detailSubtotal"
     ).textContent =
         formatMoney(
             invoice.subtotal,
@@ -641,7 +928,7 @@ function renderInvoice(data) {
 
 
     document.getElementById(
-        "vatAmount"
+        "detailVat"
     ).textContent =
         formatMoney(
             invoice.vat_amount,
@@ -650,7 +937,7 @@ function renderInvoice(data) {
 
 
     document.getElementById(
-        "totalAmount"
+        "detailTotal"
     ).textContent =
         formatMoney(
             invoice.total_amount,
@@ -658,56 +945,12 @@ function renderInvoice(data) {
         );
 
 
-    const warningContainer =
+    const lineBody =
         document.getElementById(
-            "warnings"
+            "detailLineItems"
         );
 
-
-    warningContainer.innerHTML = "";
-
-
-    if (
-        !data.warnings ||
-        data.warnings.length === 0
-    ) {
-
-        warningContainer.innerHTML =
-            '<span class="success">No validation warnings.</span>';
-
-    }
-
-    else {
-
-        for (
-            const warning
-            of data.warnings
-        ) {
-
-            const paragraph =
-                document.createElement(
-                    "p"
-                );
-
-            paragraph.className =
-                "warning";
-
-            paragraph.textContent =
-                warning;
-
-            warningContainer.appendChild(
-                paragraph
-            );
-        }
-    }
-
-
-    const lineItems =
-        document.getElementById(
-            "lineItems"
-        );
-
-    lineItems.innerHTML = "";
+    lineBody.innerHTML = "";
 
 
     for (
@@ -721,78 +964,99 @@ function renderInvoice(data) {
             );
 
         row.innerHTML = `
-            <td>${displayValue(item.description)}</td>
-            <td>${displayValue(item.quantity)}</td>
-            <td>${formatMoney(item.unit_price, currency)}</td>
-            <td>${displayValue(item.vat_rate)}%</td>
-            <td class="money">${formatMoney(item.total, currency)}</td>
+            <td>
+                ${valueOrDash(
+                    item.description
+                )}
+            </td>
+
+            <td>
+                ${valueOrDash(
+                    item.quantity
+                )}
+            </td>
+
+            <td>
+                ${formatMoney(
+                    item.unit_price,
+                    currency
+                )}
+            </td>
+
+            <td>
+                ${valueOrDash(
+                    item.vat_rate
+                )}%
+            </td>
+
+            <td>
+                ${formatMoney(
+                    item.total,
+                    currency
+                )}
+            </td>
         `;
 
-        lineItems.appendChild(
+        lineBody.appendChild(
             row
         );
     }
 
 
-    const vatBody =
+    const duplicateBox =
         document.getElementById(
-            "vatBreakdown"
+            "duplicateDetail"
         );
-
-    const vatCard =
-        document.getElementById(
-            "vatCard"
-        );
-
-    vatBody.innerHTML = "";
 
 
     if (
-        !invoice.vat_breakdown ||
-        invoice.vat_breakdown.length === 0
+        stored.duplicate_of_id
+        !== null
     ) {
 
-        vatCard.classList.add(
-            "hidden"
-        );
+        duplicateBox.className =
+            "duplicate-warning";
 
+        duplicateBox.innerHTML = `
+            ⚠ Possible duplicate.
+            This invoice matches stored invoice
+            <strong>#${stored.duplicate_of_id}</strong>.
+        `;
     }
 
     else {
 
-        vatCard.classList.remove(
-            "hidden"
-        );
-
-        for (
-            const vat
-            of invoice.vat_breakdown
-        ) {
-
-            const row =
-                document.createElement(
-                    "tr"
-                );
-
-            row.innerHTML = `
-                <td>${vat.rate}%</td>
-                <td>${formatMoney(vat.taxable_amount, currency)}</td>
-                <td>${formatMoney(vat.vat_amount, currency)}</td>
-            `;
-
-            vatBody.appendChild(
-                row
-            );
-        }
+        duplicateBox.className =
+            "hidden";
     }
 
 
+    const detailCard =
+        document.getElementById(
+            "detailCard"
+        );
+
+    detailCard.classList.remove(
+        "hidden"
+    );
+
+    detailCard.scrollIntoView({
+        behavior: "smooth"
+    });
+}
+
+
+function closeDetail() {
+
     document.getElementById(
-        "results"
-    ).classList.remove(
+        "detailCard"
+    ).classList.add(
         "hidden"
     );
 }
+
+
+loadInvoices();
 
 </script>
 
