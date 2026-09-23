@@ -1,5 +1,4 @@
 from pathlib import Path
-from tempfile import NamedTemporaryFile
 from typing import Annotated
 
 from fastapi import (
@@ -13,6 +12,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
+from app.core.document_config import document_settings
 from app.models.analytics import AnalyticsSummary
 from app.models.invoice import Invoice
 from app.models.stored_invoice import (
@@ -20,15 +20,21 @@ from app.models.stored_invoice import (
     StoredInvoiceDetail,
     StoredInvoiceSummary,
 )
+from app.services.document_processing_service import (
+    DocumentTooLargeError,
+    DocumentTooManyPagesError,
+    InvalidDocumentError,
+    process_invoice_pdf,
+)
 from app.services.llm_service import (
     GeminiInvoiceExtractor,
     InvoiceExtractionError,
 )
-from app.services.mock_llm_service import MockInvoiceExtractor
+from app.services.mock_llm_service import (
+    MockInvoiceExtractor,
+)
 from app.services.pdf_service import (
     PDFExtractionError,
-    extract_text_from_pdf,
-    render_pdf_pages_as_png,
 )
 from app.services.storage_service import (
     get_analytics_summary,
@@ -45,10 +51,9 @@ from app.services.validation_service import (
 app = FastAPI(
     title="Invoice Intelligence API",
     description=(
-        "API for extracting, validating, storing, managing "
-        "and analysing invoice information."
+        "API for extracting, validating, storing, "
+        "managing and analysing invoice information."
     ),
-    version="0.8.0",
 )
 
 
@@ -71,10 +76,19 @@ class InvoiceAPIResponse(
     ValidationResult
 ):
     filename: str
+
     extraction_method: str
+
+    extracted_text_characters: int
+
+    page_count: int
+
     invoice: Invoice
+
     database_id: int
+
     duplicate: bool
+
     duplicate_of_id: int | None
 
 
@@ -152,12 +166,16 @@ def analytics_page() -> HTMLResponse:
 )
 def health_check() -> dict[
     str,
-    str | bool,
+    str | bool | int,
 ]:
     return {
         "status": "healthy",
-        "mock_llm": (
-            settings.use_mock_llm
+        "mock_llm": settings.use_mock_llm,
+        "max_upload_size_mb": (
+            document_settings.max_upload_size_mb
+        ),
+        "max_pdf_pages": (
+            document_settings.max_pdf_pages
         ),
     }
 
@@ -221,11 +239,8 @@ def invoice_detail(
             detail="Invoice not found.",
         )
 
-    return (
-        StoredInvoiceDetail
-        .model_validate(
-            stored_invoice
-        )
+    return StoredInvoiceDetail.model_validate(
+        stored_invoice
     )
 
 
@@ -237,10 +252,8 @@ def change_invoice_status(
     invoice_id: int,
     update: InvoiceStatusUpdate,
 ) -> StoredInvoiceSummary:
-    stored_invoice = (
-        get_stored_invoice(
-            invoice_id
-        )
+    stored_invoice = get_stored_invoice(
+        invoice_id
     )
 
     if stored_invoice is None:
@@ -249,13 +262,8 @@ def change_invoice_status(
             detail="Invoice not found.",
         )
 
-    current_status = (
-        stored_invoice.status
-    )
-
-    requested_status = (
-        update.status
-    )
+    current_status = stored_invoice.status
+    requested_status = update.status
 
     allowed_transitions = {
         "new": {
@@ -288,11 +296,9 @@ def change_invoice_status(
             ),
         )
 
-    updated_invoice = (
-        update_invoice_status(
-            invoice_id=invoice_id,
-            status=requested_status,
-        )
+    updated_invoice = update_invoice_status(
+        invoice_id=invoice_id,
+        status=requested_status,
     )
 
     if updated_invoice is None:
@@ -301,11 +307,8 @@ def change_invoice_status(
             detail="Invoice not found.",
         )
 
-    return (
-        StoredInvoiceSummary
-        .model_validate(
-            updated_invoice
-        )
+    return StoredInvoiceSummary.model_validate(
+        updated_invoice
     )
 
 
@@ -319,113 +322,110 @@ async def extract_invoice(
         File(),
     ],
 ) -> InvoiceAPIResponse:
+    filename = (
+        file.filename
+        or "upload.pdf"
+    )
+
     if (
-        file.content_type
-        != "application/pdf"
+        Path(filename).suffix.lower()
+        != ".pdf"
     ):
         raise HTTPException(
             status_code=400,
             detail=(
-                "Only PDF files "
-                "are supported."
+                "Only PDF files are supported."
             ),
         )
 
-    pdf_bytes = await file.read()
+    # Read at most one byte beyond the limit. That allows us to
+    # reject oversized uploads without loading an arbitrarily
+    # large file completely into memory.
+    max_size_bytes = (
+        document_settings.max_upload_size_mb
+        * 1024
+        * 1024
+    )
 
-    temp_path: Path | None = None
+    pdf_bytes = await file.read(
+        max_size_bytes + 1
+    )
+
+    if len(pdf_bytes) > max_size_bytes:
+        raise HTTPException(
+            status_code=413,
+            detail=(
+                "Uploaded PDF exceeds the maximum "
+                f"size of "
+                f"{document_settings.max_upload_size_mb} MB."
+            ),
+        )
 
     try:
-        with NamedTemporaryFile(
-            suffix=".pdf",
-            delete=False,
-        ) as temp_file:
-            temp_file.write(
-                pdf_bytes
-            )
-
-            temp_path = Path(
-                temp_file.name
-            )
-
-        invoice_text = (
-            extract_text_from_pdf(
-                temp_path
-            )
+        processing_result = process_invoice_pdf(
+            pdf_bytes=pdf_bytes,
+            extractor=extractor,
         )
 
-        if invoice_text.strip():
-            extraction_method = "text"
+        invoice = processing_result.invoice
 
-            invoice = (
-                extractor.extract(
-                    invoice_text
-                )
-            )
-
-        else:
-            extraction_method = "vision"
-
-            page_images = (
-                render_pdf_pages_as_png(
-                    temp_path
-                )
-            )
-
-            invoice = (
-                extractor
-                .extract_from_images(
-                    page_images
-                )
-            )
-
-        validation = (
-            validate_invoice(
-                invoice
-            )
+        validation = validate_invoice(
+            invoice
         )
 
-        filename = (
-            file.filename
-            or "unknown.pdf"
-        )
-
-        stored_invoice = (
-            store_invoice(
-                filename=filename,
-                extraction_method=(
-                    extraction_method
-                ),
-                invoice=invoice,
-                validation=validation,
-            )
+        stored_invoice = store_invoice(
+            filename=filename,
+            extraction_method=(
+                processing_result.extraction_method
+            ),
+            invoice=invoice,
+            validation=validation,
         )
 
         duplicate = (
-            stored_invoice
-            .duplicate_of_id
+            stored_invoice.duplicate_of_id
             is not None
         )
 
         return InvoiceAPIResponse(
             filename=filename,
             extraction_method=(
-                extraction_method
+                processing_result.extraction_method
+            ),
+            extracted_text_characters=(
+                processing_result
+                .extracted_text_characters
+            ),
+            page_count=(
+                processing_result.page_count
             ),
             invoice=invoice,
             valid=validation.valid,
-            warnings=(
-                validation.warnings
-            ),
-            database_id=(
-                stored_invoice.id
-            ),
+            warnings=validation.warnings,
+            database_id=stored_invoice.id,
             duplicate=duplicate,
             duplicate_of_id=(
-                stored_invoice
-                .duplicate_of_id
+                stored_invoice.duplicate_of_id
             ),
         )
+
+    except InvalidDocumentError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=str(exc),
+        ) from exc
+
+    except DocumentTooLargeError as exc:
+        raise HTTPException(
+            status_code=413,
+            detail=str(exc),
+        ) from exc
+
+    except DocumentTooManyPagesError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail=str(exc),
+        ) from exc
 
     except PDFExtractionError as exc:
         raise HTTPException(
@@ -438,9 +438,3 @@ async def extract_invoice(
             status_code=502,
             detail=str(exc),
         ) from exc
-
-    finally:
-        if temp_path is not None:
-            temp_path.unlink(
-                missing_ok=True
-            )
