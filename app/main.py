@@ -20,11 +20,18 @@ from app.models.stored_invoice import (
     StoredInvoiceDetail,
     StoredInvoiceSummary,
 )
+from app.models.stored_line_item import (
+    StoredLineItem,
+)
 from app.services.document_processing_service import (
     DocumentTooLargeError,
     DocumentTooManyPagesError,
     InvalidDocumentError,
     process_invoice_pdf,
+)
+from app.services.line_item_service import (
+    get_line_item_counts,
+    list_invoice_line_items,
 )
 from app.services.llm_service import (
     GeminiInvoiceExtractor,
@@ -189,6 +196,14 @@ def analytics_summary() -> AnalyticsSummary:
 
 
 @app.get(
+    "/api/line-items/counts",
+    response_model=dict[int, int],
+)
+def line_item_counts() -> dict[int, int]:
+    return get_line_item_counts()
+
+
+@app.get(
     "/api/invoices",
     response_model=list[
         StoredInvoiceSummary
@@ -242,6 +257,38 @@ def invoice_detail(
     return StoredInvoiceDetail.model_validate(
         stored_invoice
     )
+
+
+@app.get(
+    "/api/invoices/{invoice_id}/line-items",
+    response_model=list[
+        StoredLineItem
+    ],
+)
+def invoice_line_items(
+    invoice_id: int,
+) -> list[StoredLineItem]:
+    stored_invoice = get_stored_invoice(
+        invoice_id
+    )
+
+    if stored_invoice is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Invoice not found.",
+        )
+
+    line_items = list_invoice_line_items(
+        invoice_id
+    )
+
+    return [
+        StoredLineItem.model_validate(
+            line_item
+        )
+        for line_item
+        in line_items
+    ]
 
 
 @app.patch(
@@ -338,9 +385,6 @@ async def extract_invoice(
             ),
         )
 
-    # Read at most one byte beyond the limit. That allows us to
-    # reject oversized uploads without loading an arbitrarily
-    # large file completely into memory.
     max_size_bytes = (
         document_settings.max_upload_size_mb
         * 1024

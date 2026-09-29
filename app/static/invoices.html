@@ -24,10 +24,7 @@
 <nav class="navbar">
     <div class="container nav-inner">
 
-        <a
-            href="/"
-            class="brand"
-        >
+        <a href="/" class="brand">
             Invoice Intelligence
         </a>
 
@@ -133,6 +130,24 @@
 
     <div class="card">
 
+        <div class="section-header">
+
+            <div>
+                <h2>Stored invoices</h2>
+
+                <div class="muted">
+                    Invoice headers and normalized
+                    PostgreSQL line-item counts.
+                </div>
+            </div>
+
+            <span class="source-chip">
+                PostgreSQL
+            </span>
+
+        </div>
+
+
         <div class="table-wrapper">
 
             <table>
@@ -144,6 +159,7 @@
                         <th>Invoice number</th>
                         <th>Invoice date</th>
                         <th>Due date</th>
+                        <th>Items</th>
                         <th>Total</th>
                         <th>Status</th>
                         <th>Checks</th>
@@ -175,8 +191,26 @@
 
 let invoices = [];
 
+let lineItemCounts = {};
+
 let currentFilter =
     "all";
+
+
+function escapeHtml(value) {
+    const div =
+        document.createElement(
+            "div"
+        );
+
+    div.textContent =
+        value === null ||
+        value === undefined
+        ? ""
+        : String(value);
+
+    return div.innerHTML;
+}
 
 
 function formatMoney(
@@ -214,9 +248,11 @@ function statusBadge(
 
     return `
         <span
-            class="badge badge-${status}"
+            class="badge badge-${escapeHtml(status)}"
         >
-            ${labels[status] || status}
+            ${escapeHtml(
+                labels[status] || status
+            )}
         </span>
     `;
 }
@@ -392,6 +428,12 @@ function renderInvoices() {
         }
 
 
+        const itemCount =
+            lineItemCounts[
+                invoice.id
+            ] || 0;
+
+
         const row =
             document.createElement(
                 "tr"
@@ -404,19 +446,33 @@ function renderInvoices() {
             </td>
 
             <td>
-                ${invoice.supplier_name || "—"}
+                ${escapeHtml(
+                    invoice.supplier_name || "—"
+                )}
             </td>
 
             <td>
-                ${invoice.invoice_number || "—"}
+                ${escapeHtml(
+                    invoice.invoice_number || "—"
+                )}
             </td>
 
             <td>
-                ${invoice.invoice_date || "—"}
+                ${escapeHtml(
+                    invoice.invoice_date || "—"
+                )}
             </td>
 
             <td>
-                ${invoice.due_date || "—"}
+                ${escapeHtml(
+                    invoice.due_date || "—"
+                )}
+            </td>
+
+            <td>
+                <span class="item-count">
+                    ${itemCount}
+                </span>
             </td>
 
             <td>
@@ -456,19 +512,32 @@ function renderInvoices() {
 
 async function loadInvoices() {
 
-    const response =
-        await fetch(
+    const [
+        invoicesResponse,
+        countsResponse
+    ] = await Promise.all([
+        fetch(
             "/api/invoices"
-        );
+        ),
+        fetch(
+            "/api/line-items/counts"
+        )
+    ]);
 
 
-    if (!response.ok) {
+    if (countsResponse.ok) {
+        lineItemCounts =
+            await countsResponse.json();
+    }
+
+
+    if (!invoicesResponse.ok) {
         return;
     }
 
 
     invoices =
-        await response.json();
+        await invoicesResponse.json();
 
 
     renderInvoices();
