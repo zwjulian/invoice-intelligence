@@ -4,7 +4,6 @@ from pathlib import Path
 
 import pytest
 
-
 # ---------------------------------------------------------------------
 # IMPORTANT:
 # Configure the test environment BEFORE importing application modules.
@@ -32,9 +31,8 @@ os.environ["USE_MOCK_LLM"] = "true"
 
 
 # These imports must happen AFTER the environment variables above.
-import app.db_models  # noqa: E402, F401
-
-from app.database import (  # noqa: E402
+import app.db_models  # noqa: F401
+from app.database import (
     Base,
     engine,
 )
