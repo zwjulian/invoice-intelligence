@@ -1,6 +1,5 @@
 from sqlalchemy import inspect
 
-from app.db import models
 from app.db.database import Base, engine
 
 

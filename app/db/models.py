@@ -2,11 +2,11 @@ from datetime import date, datetime, timezone
 from decimal import Decimal
 
 from sqlalchemy import (
+    JSON,
     Boolean,
     Date,
     DateTime,
     ForeignKey,
-    JSON,
     Numeric,
     String,
     Text,

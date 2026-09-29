@@ -79,7 +79,7 @@ def main() -> None:
         ) in rows:
             print(
                 f"ID {invoice_id:<3} "
-                f"{str(invoice_number):<25} "
+                f"{invoice_number!s:<25} "
                 f"{count} line item(s)"
             )
 

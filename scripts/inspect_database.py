@@ -20,7 +20,7 @@ def print_table_structure(
     for column in columns:
         print(
             f"  {column['name']:<25} "
-            f"{str(column['type']):<25} "
+            f"{column['type']!s:<25} "
             f"nullable={column['nullable']}"
         )
 
