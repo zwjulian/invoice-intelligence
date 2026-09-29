@@ -14,7 +14,10 @@ from sqlalchemy import (
 from sqlalchemy.orm import Session
 
 from app.database import SessionLocal
-from app.db_models import StoredInvoice
+from app.db_models import (
+    StoredInvoice,
+    StoredInvoiceLineItem,
+)
 from app.models.analytics import (
     AnalyticsSummary,
     CurrencyAmountSummary,
@@ -144,6 +147,39 @@ def store_invoice(
             stored_invoice
         )
 
+        # Flush inserts the invoice without committing
+        # the transaction yet. This gives us its database ID
+        # so the line items can reference it.
+        session.flush()
+
+        for item in invoice.line_items:
+            stored_line_item = (
+                StoredInvoiceLineItem(
+                    invoice_id=(
+                        stored_invoice.id
+                    ),
+                    description=(
+                        item.description
+                    ),
+                    quantity=(
+                        item.quantity
+                    ),
+                    unit_price=(
+                        item.unit_price
+                    ),
+                    vat_rate=(
+                        item.vat_rate
+                    ),
+                    total=(
+                        item.total
+                    ),
+                )
+            )
+
+            session.add(
+                stored_line_item
+            )
+
         session.commit()
 
         session.refresh(
@@ -151,7 +187,6 @@ def store_invoice(
         )
 
         return stored_invoice
-
 
 def list_stored_invoices(
     limit: int = 100,

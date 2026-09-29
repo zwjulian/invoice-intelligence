@@ -14,10 +14,12 @@ from sqlalchemy import (
     Integer,
     Numeric,
     String,
+    Text,
 )
 from sqlalchemy.orm import (
     Mapped,
     mapped_column,
+    relationship,
 )
 
 from app.database import Base
@@ -129,13 +131,17 @@ class StoredInvoice(Base):
         nullable=False,
     )
 
-    warnings: Mapped[list[str]] = mapped_column(
+    warnings: Mapped[
+        list[str]
+    ] = mapped_column(
         JSON,
         nullable=False,
         default=list,
     )
 
-    invoice_data: Mapped[dict] = mapped_column(
+    invoice_data: Mapped[
+        dict
+    ] = mapped_column(
         JSON,
         nullable=False,
     )
@@ -189,4 +195,80 @@ class StoredInvoice(Base):
             timezone=True
         ),
         nullable=True,
+    )
+
+    line_items: Mapped[
+        list["StoredInvoiceLineItem"]
+    ] = relationship(
+        back_populates="invoice",
+        cascade="all, delete-orphan",
+    )
+
+
+class StoredInvoiceLineItem(Base):
+    __tablename__ = "invoice_line_items"
+
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    invoice_id: Mapped[int] = mapped_column(
+        ForeignKey(
+            "invoices.id"
+        ),
+        nullable=False,
+        index=True,
+    )
+
+    description: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+    )
+
+    quantity: Mapped[
+        Decimal | None
+    ] = mapped_column(
+        Numeric(
+            precision=14,
+            scale=4,
+        ),
+        nullable=True,
+    )
+
+    unit_price: Mapped[
+        Decimal | None
+    ] = mapped_column(
+        Numeric(
+            precision=14,
+            scale=2,
+        ),
+        nullable=True,
+    )
+
+    vat_rate: Mapped[
+        Decimal | None
+    ] = mapped_column(
+        Numeric(
+            precision=8,
+            scale=4,
+        ),
+        nullable=True,
+    )
+
+    total: Mapped[
+        Decimal | None
+    ] = mapped_column(
+        Numeric(
+            precision=14,
+            scale=2,
+        ),
+        nullable=True,
+    )
+
+    invoice: Mapped[
+        "StoredInvoice"
+    ] = relationship(
+        back_populates="line_items",
     )
