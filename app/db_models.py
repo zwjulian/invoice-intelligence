@@ -198,15 +198,32 @@ class StoredInvoice(Base):
     )
 
     line_items: Mapped[
-        list["StoredInvoiceLineItem"]
+        list[
+            "StoredInvoiceLineItem"
+        ]
     ] = relationship(
         back_populates="invoice",
-        cascade="all, delete-orphan",
+        cascade=(
+            "all, delete-orphan"
+        ),
+    )
+
+    corrections: Mapped[
+        list[
+            "InvoiceCorrectionRecord"
+        ]
+    ] = relationship(
+        back_populates="invoice",
+        cascade=(
+            "all, delete-orphan"
+        ),
     )
 
 
 class StoredInvoiceLineItem(Base):
-    __tablename__ = "invoice_line_items"
+    __tablename__ = (
+        "invoice_line_items"
+    )
 
     id: Mapped[int] = mapped_column(
         Integer,
@@ -216,13 +233,16 @@ class StoredInvoiceLineItem(Base):
 
     invoice_id: Mapped[int] = mapped_column(
         ForeignKey(
-            "invoices.id"
+            "invoices.id",
+            ondelete="CASCADE",
         ),
         nullable=False,
         index=True,
     )
 
-    description: Mapped[str] = mapped_column(
+    description: Mapped[
+        str
+    ] = mapped_column(
         Text,
         nullable=False,
     )
@@ -271,4 +291,80 @@ class StoredInvoiceLineItem(Base):
         "StoredInvoice"
     ] = relationship(
         back_populates="line_items",
+    )
+
+
+class InvoiceCorrectionRecord(Base):
+    __tablename__ = (
+        "invoice_corrections"
+    )
+
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        autoincrement=True,
+    )
+
+    invoice_id: Mapped[int] = mapped_column(
+        ForeignKey(
+            "invoices.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        index=True,
+    )
+
+    field_name: Mapped[
+        str
+    ] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+
+    old_value: Mapped[
+        object | None
+    ] = mapped_column(
+        JSON,
+        nullable=True,
+    )
+
+    new_value: Mapped[
+        object | None
+    ] = mapped_column(
+        JSON,
+        nullable=True,
+    )
+
+    changed_by: Mapped[
+        str
+    ] = mapped_column(
+        String(100),
+        nullable=False,
+        default="manual-review",
+    )
+
+    source: Mapped[
+        str
+    ] = mapped_column(
+        String(20),
+        nullable=False,
+        default="human",
+    )
+
+    changed_at: Mapped[
+        datetime
+    ] = mapped_column(
+        DateTime(
+            timezone=True
+        ),
+        nullable=False,
+        default=lambda: datetime.now(
+            UTC
+        ),
+    )
+
+    invoice: Mapped[
+        "StoredInvoice"
+    ] = relationship(
+        back_populates="corrections",
     )

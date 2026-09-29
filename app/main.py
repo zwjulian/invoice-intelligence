@@ -8,13 +8,25 @@ from fastapi import (
     Query,
     UploadFile,
 )
-from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import (
+    HTMLResponse,
+)
+from fastapi.staticfiles import (
+    StaticFiles,
+)
 
 from app.core.config import settings
-from app.core.document_config import document_settings
-from app.models.analytics import AnalyticsSummary
+from app.core.document_config import (
+    document_settings,
+)
+from app.models.analytics import (
+    AnalyticsSummary,
+)
 from app.models.invoice import Invoice
+from app.models.invoice_correction import (
+    InvoiceCorrectionRequest,
+    InvoiceCorrectionResponse,
+)
 from app.models.stored_invoice import (
     InvoiceStatusUpdate,
     StoredInvoiceDetail,
@@ -45,9 +57,11 @@ from app.services.pdf_service import (
 )
 from app.services.storage_service import (
     get_analytics_summary,
+    get_invoice_corrections,
     get_stored_invoice,
     list_stored_invoices,
     store_invoice,
+    update_invoice_from_correction,
     update_invoice_status,
 )
 from app.services.validation_service import (
@@ -59,7 +73,8 @@ app = FastAPI(
     title="Invoice Intelligence API",
     description=(
         "API for extracting, validating, storing, "
-        "managing and analysing invoice information."
+        "reviewing, managing and analysing "
+        "invoice information."
     ),
 )
 
@@ -100,9 +115,13 @@ class InvoiceAPIResponse(
 
 
 if settings.use_mock_llm:
-    extractor = MockInvoiceExtractor()
+    extractor = (
+        MockInvoiceExtractor()
+    )
 else:
-    extractor = GeminiInvoiceExtractor()
+    extractor = (
+        GeminiInvoiceExtractor()
+    )
 
 
 def read_html(
@@ -177,12 +196,16 @@ def health_check() -> dict[
 ]:
     return {
         "status": "healthy",
-        "mock_llm": settings.use_mock_llm,
+        "mock_llm": (
+            settings.use_mock_llm
+        ),
         "max_upload_size_mb": (
-            document_settings.max_upload_size_mb
+            document_settings
+            .max_upload_size_mb
         ),
         "max_pdf_pages": (
-            document_settings.max_pdf_pages
+            document_settings
+            .max_pdf_pages
         ),
     }
 
@@ -191,7 +214,8 @@ def health_check() -> dict[
     "/api/analytics/summary",
     response_model=AnalyticsSummary,
 )
-def analytics_summary() -> AnalyticsSummary:
+def analytics_summary(
+) -> AnalyticsSummary:
     return get_analytics_summary()
 
 
@@ -199,7 +223,8 @@ def analytics_summary() -> AnalyticsSummary:
     "/api/line-items/counts",
     response_model=dict[int, int],
 )
-def line_item_counts() -> dict[int, int]:
+def line_item_counts(
+) -> dict[int, int]:
     return get_line_item_counts()
 
 
@@ -227,7 +252,8 @@ def invoices(
     )
 
     return [
-        StoredInvoiceSummary.model_validate(
+        StoredInvoiceSummary
+        .model_validate(
             invoice
         )
         for invoice
@@ -251,11 +277,16 @@ def invoice_detail(
     if stored_invoice is None:
         raise HTTPException(
             status_code=404,
-            detail="Invoice not found.",
+            detail=(
+                "Invoice not found."
+            ),
         )
 
-    return StoredInvoiceDetail.model_validate(
-        stored_invoice
+    return (
+        StoredInvoiceDetail
+        .model_validate(
+            stored_invoice
+        )
     )
 
 
@@ -267,19 +298,27 @@ def invoice_detail(
 )
 def invoice_line_items(
     invoice_id: int,
-) -> list[StoredLineItem]:
-    stored_invoice = get_stored_invoice(
-        invoice_id
+) -> list[
+    StoredLineItem
+]:
+    stored_invoice = (
+        get_stored_invoice(
+            invoice_id
+        )
     )
 
     if stored_invoice is None:
         raise HTTPException(
             status_code=404,
-            detail="Invoice not found.",
+            detail=(
+                "Invoice not found."
+            ),
         )
 
-    line_items = list_invoice_line_items(
-        invoice_id
+    line_items = (
+        list_invoice_line_items(
+            invoice_id
+        )
     )
 
     return [
@@ -291,6 +330,78 @@ def invoice_line_items(
     ]
 
 
+@app.get(
+    "/api/invoices/{invoice_id}/corrections",
+    response_model=list[
+        InvoiceCorrectionResponse
+    ],
+)
+def invoice_corrections(
+    invoice_id: int,
+) -> list[
+    InvoiceCorrectionResponse
+]:
+    stored_invoice = (
+        get_stored_invoice(
+            invoice_id
+        )
+    )
+
+    if stored_invoice is None:
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                "Invoice not found."
+            ),
+        )
+
+    corrections = (
+        get_invoice_corrections(
+            invoice_id
+        )
+    )
+
+    return [
+        InvoiceCorrectionResponse
+        .model_validate(
+            correction
+        )
+        for correction
+        in corrections
+    ]
+
+
+@app.patch(
+    "/api/invoices/{invoice_id}",
+    response_model=StoredInvoiceDetail,
+)
+def correct_invoice(
+    invoice_id: int,
+    update: InvoiceCorrectionRequest,
+) -> StoredInvoiceDetail:
+    stored_invoice = (
+        update_invoice_from_correction(
+            invoice_id=invoice_id,
+            update=update,
+        )
+    )
+
+    if stored_invoice is None:
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                "Invoice not found."
+            ),
+        )
+
+    return (
+        StoredInvoiceDetail
+        .model_validate(
+            stored_invoice
+        )
+    )
+
+
 @app.patch(
     "/api/invoices/{invoice_id}/status",
     response_model=StoredInvoiceSummary,
@@ -299,18 +410,27 @@ def change_invoice_status(
     invoice_id: int,
     update: InvoiceStatusUpdate,
 ) -> StoredInvoiceSummary:
-    stored_invoice = get_stored_invoice(
-        invoice_id
+    stored_invoice = (
+        get_stored_invoice(
+            invoice_id
+        )
     )
 
     if stored_invoice is None:
         raise HTTPException(
             status_code=404,
-            detail="Invoice not found.",
+            detail=(
+                "Invoice not found."
+            ),
         )
 
-    current_status = stored_invoice.status
-    requested_status = update.status
+    current_status = (
+        stored_invoice.status
+    )
+
+    requested_status = (
+        update.status
+    )
 
     allowed_transitions = {
         "new": {
@@ -343,19 +463,28 @@ def change_invoice_status(
             ),
         )
 
-    updated_invoice = update_invoice_status(
-        invoice_id=invoice_id,
-        status=requested_status,
+    updated_invoice = (
+        update_invoice_status(
+            invoice_id=invoice_id,
+            status=(
+                requested_status
+            ),
+        )
     )
 
     if updated_invoice is None:
         raise HTTPException(
             status_code=404,
-            detail="Invoice not found.",
+            detail=(
+                "Invoice not found."
+            ),
         )
 
-    return StoredInvoiceSummary.model_validate(
-        updated_invoice
+    return (
+        StoredInvoiceSummary
+        .model_validate(
+            updated_invoice
+        )
     )
 
 
@@ -375,7 +504,9 @@ async def extract_invoice(
     )
 
     if (
-        Path(filename).suffix.lower()
+        Path(
+            filename
+        ).suffix.lower()
         != ".pdf"
     ):
         raise HTTPException(
@@ -386,7 +517,8 @@ async def extract_invoice(
         )
 
     max_size_bytes = (
-        document_settings.max_upload_size_mb
+        document_settings
+        .max_upload_size_mb
         * 1024
         * 1024
     )
@@ -395,89 +527,121 @@ async def extract_invoice(
         max_size_bytes + 1
     )
 
-    if len(pdf_bytes) > max_size_bytes:
+    if (
+        len(pdf_bytes)
+        > max_size_bytes
+    ):
         raise HTTPException(
             status_code=413,
             detail=(
-                "Uploaded PDF exceeds the maximum "
-                f"size of "
+                "Uploaded PDF exceeds "
+                "the maximum size of "
                 f"{document_settings.max_upload_size_mb} MB."
             ),
         )
 
     try:
-        processing_result = process_invoice_pdf(
-            pdf_bytes=pdf_bytes,
-            extractor=extractor,
+        processing_result = (
+            process_invoice_pdf(
+                pdf_bytes=pdf_bytes,
+                extractor=extractor,
+            )
         )
 
-        invoice = processing_result.invoice
-
-        validation = validate_invoice(
-            invoice
+        invoice = (
+            processing_result.invoice
         )
 
-        stored_invoice = store_invoice(
-            filename=filename,
-            extraction_method=(
-                processing_result.extraction_method
-            ),
-            invoice=invoice,
-            validation=validation,
+        validation = (
+            validate_invoice(
+                invoice
+            )
+        )
+
+        stored_invoice = (
+            store_invoice(
+                filename=filename,
+                extraction_method=(
+                    processing_result
+                    .extraction_method
+                ),
+                invoice=invoice,
+                validation=validation,
+            )
         )
 
         duplicate = (
-            stored_invoice.duplicate_of_id
+            stored_invoice
+            .duplicate_of_id
             is not None
         )
 
         return InvoiceAPIResponse(
             filename=filename,
             extraction_method=(
-                processing_result.extraction_method
+                processing_result
+                .extraction_method
             ),
             extracted_text_characters=(
                 processing_result
                 .extracted_text_characters
             ),
             page_count=(
-                processing_result.page_count
+                processing_result
+                .page_count
             ),
             invoice=invoice,
-            valid=validation.valid,
-            warnings=validation.warnings,
-            database_id=stored_invoice.id,
+            valid=(
+                validation.valid
+            ),
+            warnings=(
+                validation.warnings
+            ),
+            database_id=(
+                stored_invoice.id
+            ),
             duplicate=duplicate,
             duplicate_of_id=(
-                stored_invoice.duplicate_of_id
+                stored_invoice
+                .duplicate_of_id
             ),
         )
 
-    except InvalidDocumentError as exc:
+    except (
+        InvalidDocumentError
+    ) as exc:
         raise HTTPException(
             status_code=400,
             detail=str(exc),
         ) from exc
 
-    except DocumentTooLargeError as exc:
+    except (
+        DocumentTooLargeError
+    ) as exc:
         raise HTTPException(
             status_code=413,
             detail=str(exc),
         ) from exc
 
-    except DocumentTooManyPagesError as exc:
+    except (
+        DocumentTooManyPagesError
+    ) as exc:
         raise HTTPException(
             status_code=422,
             detail=str(exc),
         ) from exc
 
-    except PDFExtractionError as exc:
+    except (
+        PDFExtractionError
+    ) as exc:
         raise HTTPException(
             status_code=422,
             detail=str(exc),
         ) from exc
 
-    except InvoiceExtractionError as exc:
+    except (
+        InvoiceExtractionError
+    ) as exc:
         raise HTTPException(
             status_code=502,
             detail=str(exc),
