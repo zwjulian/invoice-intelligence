@@ -1,1478 +1,947 @@
-\# Invoice Intelligence API
+# Invoice Intelligence
 
+A production-oriented AI application for extracting, validating, reviewing and managing structured invoice data from PDF documents.
 
+The project combines LLM-based document understanding with deterministic validation, PostgreSQL persistence, a human review workflow, audit logging, automated testing, CI/CD and a web interface.
 
-An LLM-powered document processing API that extracts structured invoice
+## Overview
 
-information from PDF files and validates the extracted data using
-
-deterministic business rules.
-
-
-
-The project demonstrates a production-oriented approach to LLM application
-
-development using Python, FastAPI, Pydantic, Google Gemini, automated testing,
-
-Docker and continuous integration.
-
-
-
-\---
-
-
-
-\## Features
-
-
-
-\- PDF text extraction using PyMuPDF
-
-\- Structured invoice extraction using Google Gemini
-
-\- Pydantic models for type-safe structured output
-
-\- Deterministic business-rule validation
-
-\- FastAPI REST API
-
-\- Automatic OpenAPI / Swagger documentation
-
-\- Mock LLM mode for deterministic development and testing
-
-\- Automated unit and API tests using pytest
-
-\- Docker containerization
-
-\- GitHub Actions continuous integration
-
-\- Field-level LLM evaluation against a golden dataset
-
-
-
-\---
-
-
-
-\## Architecture
-
-
+Invoice Intelligence processes an uploaded invoice through a complete document-processing workflow:
 
 ```text
-
-&#x20;                        PDF
-
-&#x20;                         |
-
-&#x20;                         v
-
-&#x20;                 +---------------+
-
-&#x20;                 |    FastAPI    |
-
-&#x20;                 +-------+-------+
-
-&#x20;                         |
-
-&#x20;                         v
-
-&#x20;                 +---------------+
-
-&#x20;                 |    PyMuPDF    |
-
-&#x20;                 | PDF extraction|
-
-&#x20;                 +-------+-------+
-
-&#x20;                         |
-
-&#x20;                      raw text
-
-&#x20;                         |
-
-&#x20;                         v
-
-&#x20;                 +---------------+
-
-&#x20;                 |    Gemini     |
-
-&#x20;                 |  structured   |
-
-&#x20;                 |  extraction   |
-
-&#x20;                 +-------+-------+
-
-&#x20;                         |
-
-&#x20;                         v
-
-&#x20;                 +---------------+
-
-&#x20;                 |   Pydantic    |
-
-&#x20;                 | Invoice model |
-
-&#x20;                 +-------+-------+
-
-&#x20;                         |
-
-&#x20;                         v
-
-&#x20;                 +---------------+
-
-&#x20;                 |   Business    |
-
-&#x20;                 |  validation   |
-
-&#x20;                 +-------+-------+
-
-&#x20;                         |
-
-&#x20;                         v
-
-&#x20;                   JSON response
-
+PDF invoice
+    ↓
+Document processing
+    ├── embedded text extraction
+    └── vision fallback for image-based PDFs
+    ↓
+Google Gemini
+    ↓
+Structured Pydantic Invoice
+    ↓
+Deterministic business validation
+    ↓
+PostgreSQL
+    ├── invoice snapshot
+    ├── normalized line items
+    ├── workflow state
+    ├── duplicate detection
+    └── correction audit history
+    ↓
+FastAPI
+    ↓
+Web interface
+    ↓
+Human review / correction
+    ↓
+Revalidation and approval workflow
 ```
 
+The goal is not just to demonstrate an LLM call, but to show how AI extraction can be integrated into a more complete and reliable software system.
 
+---
 
-The LLM is responsible for extracting information from unstructured document
+## Features
 
-text, while deterministic Python code is used to validate the resulting data.
+### AI document extraction
 
+- PDF processing using PyMuPDF
+- automatic text extraction for digital PDFs
+- vision fallback for scanned or image-based PDFs
+- structured extraction using Google Gemini
+- Pydantic-based structured output
+- supplier and customer extraction
+- invoice dates and invoice numbers
+- totals and VAT information
+- individual invoice line items
+- VAT breakdown extraction
 
+### Deterministic validation
 
-\---
+LLM output is validated using normal Python business rules.
 
-
-
-\## Extracted information
-
-
-
-The current invoice schema extracts:
-
-
-
-\- invoice number
-
-\- invoice date
-
-\- payment due date
-
-\- supplier name
-
-\- supplier address
-
-\- supplier VAT number
-
-\- customer name
-
-\- customer address
-
-\- customer VAT number
-
-\- currency
-
-\- subtotal
-
-\- VAT amount
-
-\- total amount
-
-\- individual invoice line items
-
-\- quantities
-
-\- unit prices
-
-\- VAT rates
-
-\- line totals
-
-
-
-Example output:
-
-
-
-```json
-
-{
-
-&#x20; "invoice\_number": "INV-2026-0042",
-
-&#x20; "invoice\_date": "2026-09-15",
-
-&#x20; "due\_date": "2026-10-15",
-
-&#x20; "supplier": {
-
-&#x20;   "name": "NorthStar Software B.V.",
-
-&#x20;   "address": "Zernikepark 12, 9747 AN Groningen, Netherlands",
-
-&#x20;   "vat\_number": "NL865432109B01"
-
-&#x20; },
-
-&#x20; "customer": {
-
-&#x20;   "name": "Data Example B.V.",
-
-&#x20;   "address": "Helperpark 100, 9723 ZA Groningen, Netherlands",
-
-&#x20;   "vat\_number": "NL123456789B01"
-
-&#x20; },
-
-&#x20; "currency": "EUR",
-
-&#x20; "subtotal": "1990.00",
-
-&#x20; "vat\_amount": "417.90",
-
-&#x20; "total\_amount": "2407.90",
-
-&#x20; "line\_items": \[
-
-&#x20;   {
-
-&#x20;     "description": "AI consultancy - architecture workshop",
-
-&#x20;     "quantity": "2",
-
-&#x20;     "unit\_price": "450.00",
-
-&#x20;     "vat\_rate": "21",
-
-&#x20;     "total": "900.00"
-
-&#x20;   }
-
-&#x20; ]
-
-}
-
-```
-
-
-
-\---
-
-
-
-\## Structured output
-
-
-
-A normal LLM prompt can return inconsistent JSON or unexpected field names.
-
-
-
-This project instead defines the expected output using a Pydantic `Invoice`
-
-model.
-
-
+Examples include:
 
 ```text
-
-Pydantic model
-
-&#x20;     |
-
-&#x20;     v
-
-JSON schema
-
-&#x20;     |
-
-&#x20;     v
-
-Gemini structured output
-
-&#x20;     |
-
-&#x20;     v
-
-Validated Invoice object
-
-```
-
-
-
-This creates a clear contract between the LLM and the rest of the application.
-
-
-
-For example, fields such as invoice dates are parsed as Python dates and
-
-monetary values are represented using `Decimal`.
-
-
-
-\---
-
-
-
-\## Business validation
-
-
-
-Valid structured output does not automatically mean that the extracted
-
-invoice is logically correct.
-
-
-
-The application therefore applies deterministic business rules after the LLM
-
-extraction.
-
-
-
-Current checks include:
-
-
-
-```text
-
 subtotal + VAT ≈ total amount
-
-
 
 sum(line item totals) ≈ subtotal
 
-
-
 due date >= invoice date
 
+VAT breakdown totals must match invoice VAT
+
+VAT calculations must be internally consistent
 ```
 
-
-
-A small monetary tolerance is allowed to handle minor rounding differences.
-
-
-
-A valid invoice produces:
-
-
-
-```json
-
-{
-
-&#x20; "valid": true,
-
-&#x20; "warnings": \[]
-
-}
-
-```
-
-
-
-An inconsistent invoice could produce:
-
-
-
-```json
-
-{
-
-&#x20; "valid": false,
-
-&#x20; "warnings": \[
-
-&#x20;   "Subtotal plus VAT does not match total amount."
-
-&#x20; ]
-
-}
-
-```
-
-
-
-This separates two different concerns:
-
-
+This separates two responsibilities:
 
 ```text
+LLM
+→ extract information from the document
 
-Pydantic validation
-
-→ Is the structure and datatype correct?
-
-
-
-Business validation
-
-→ Does the extracted invoice logically make sense?
-
+Python
+→ verify whether the extracted information is logically consistent
 ```
 
+### PostgreSQL persistence
 
+Processed invoices are stored in PostgreSQL.
 
-\---
-
-
-
-\## Mock LLM mode
-
-
-
-External LLM services can experience latency, rate limits or temporary
-
-availability issues.
-
-
-
-The project therefore provides two extraction modes.
-
-
-
-\### Gemini mode
-
-
+The application keeps both:
 
 ```text
+invoice_data JSON
+→ complete structured extraction snapshot
 
-PDF
-
-→ PyMuPDF
-
-→ Gemini
-
-→ Pydantic Invoice
-
-→ business validation
-
+relational tables
+→ queryable operational data
 ```
 
+Invoice line items are normalized into a separate `invoice_line_items` table.
 
+This makes queries and future analytics much easier than storing everything only as JSON.
 
-\### Mock mode
+### Duplicate detection
 
+Invoices are checked for possible duplicates using invoice number and supplier information.
 
+Duplicates are still stored, but reference the original invoice using `duplicate_of_id`.
+
+This allows the application to surface duplicates without silently discarding uploaded documents.
+
+### Invoice workflow
+
+Invoices use a simple accounts-payable workflow:
 
 ```text
-
-PDF
-
-→ PyMuPDF
-
-→ deterministic MockInvoiceExtractor
-
-→ business validation
-
+new
+ ↓
+approved
+ ↓
+paid
 ```
 
+Controlled reverse transitions are also supported:
 
-
-Mock mode can be enabled using:
-
-
-
-```env
-
-USE\_MOCK\_LLM=true
-
+```text
+approved → new
+paid → approved
 ```
 
+Workflow timestamps record when an invoice was approved or paid.
 
+### Human-in-the-loop review
 
-The real Gemini extractor can be enabled using:
+Extracted invoices can be manually corrected from the web interface.
 
+Editable information includes:
 
+- invoice number
+- invoice and due dates
+- supplier information
+- customer information
+- currency
+- subtotal
+- VAT
+- total amount
+- invoice line items
 
-```env
+After a correction:
 
-USE\_MOCK\_LLM=false
-
+```text
+manual edit
+    ↓
+structured invoice updated
+    ↓
+business validation reruns
+    ↓
+normalized line items are synchronized
+    ↓
+audit history is written
 ```
 
+If an already approved or paid invoice is changed, it automatically returns to `new` so that the corrected invoice must be reviewed again.
 
+### Correction audit trail
 
-Using a deterministic mock makes automated tests independent of external LLM
+Manual changes are stored in `invoice_corrections`.
 
-availability, latency and API limits.
+Each audit entry records:
 
-
-
-\---
-
-
-
-\## Installation
-
-
-
-The project uses Python 3.11.
-
-
-
-Clone the repository:
-
-
-
-```bash
-
-git clone https://github.com/zwjulian/invoice-intelligence.git
-
-cd invoice-intelligence
-
+```text
+field name
+old value
+new value
+changed by
+source
+timestamp
 ```
-
-
-
-Create a virtual environment:
-
-
-
-```bash
-
-python -m venv .venv
-
-```
-
-
-
-Activate it on Windows PowerShell:
-
-
-
-```powershell
-
-.\\.venv\\Scripts\\Activate.ps1
-
-```
-
-
-
-Install dependencies:
-
-
-
-```bash
-
-pip install -r requirements.txt
-
-```
-
-
-
-\---
-
-
-
-\## Environment configuration
-
-
-
-Create a `.env` file based on `.env.example`.
-
-
 
 Example:
 
+```text
+supplier_name
 
+NorthStar Software B.V.
+→
+NorthStar Software Groningen B.V.
+
+source: human
+```
+
+Automatic workflow changes caused by corrections are also recorded with `source: system`.
+
+### Web interface
+
+The application includes a lightweight frontend served directly by FastAPI.
+
+Available pages include:
+
+```text
+/
+→ dashboard and invoice upload
+
+/invoices
+→ invoice overview, filters and search
+
+/invoices/{id}
+→ invoice details, line items, validation,
+   workflow actions and correction history
+
+/analytics
+→ financial and workflow analytics
+
+/docs
+→ interactive FastAPI / Swagger API documentation
+```
+
+The invoice overview supports live search by supplier or invoice number.
+
+Filters are available for:
+
+```text
+All
+New
+Approved
+Paid
+Overdue
+Duplicates
+```
+
+### Analytics
+
+The application includes analytics over stored invoices, including:
+
+- total invoice count
+- workflow status counts
+- overdue invoices
+- duplicate invoices
+- invoices requiring attention
+- invoices waiting for approval
+- open amounts by currency
+- paid amounts
+- monthly payments
+- supplier spend
+- average approval time
+- average payment time
+
+Duplicate invoices are excluded from monetary aggregates to avoid double counting.
+
+---
+
+## Architecture
+
+```mermaid
+flowchart TD
+    A[PDF Upload] --> B[Document Processing]
+
+    B --> C{Usable embedded text?}
+
+    C -->|Yes| D[Text Extraction]
+    C -->|No| E[Vision Processing]
+
+    D --> F[Google Gemini]
+    E --> F
+
+    F --> G[Pydantic Invoice Model]
+
+    G --> H[Deterministic Validation]
+
+    H --> I[PostgreSQL]
+
+    I --> J[Invoices]
+    I --> K[Normalized Line Items]
+    I --> L[Workflow State]
+    I --> M[Correction Audit Log]
+
+    I --> N[FastAPI]
+
+    N --> O[Web Interface]
+
+    O --> P[Human Review]
+
+    P --> H
+```
+
+The LLM handles unstructured document interpretation.
+
+Pydantic provides the structured contract.
+
+Normal Python code handles validation and workflow rules.
+
+PostgreSQL provides persistent and queryable operational data.
+
+---
+
+## Extracted invoice schema
+
+The extraction model includes information such as:
+
+```json
+{
+  "invoice_number": "INV-2026-0042",
+  "invoice_date": "2026-09-15",
+  "due_date": "2026-10-15",
+  "supplier": {
+    "name": "NorthStar Software B.V.",
+    "address": "Zernikepark 12, 9747 AN Groningen",
+    "vat_number": "NL865432109B01"
+  },
+  "customer": {
+    "name": "Data Example B.V.",
+    "address": "Helperpark 100, 9723 ZA Groningen",
+    "vat_number": "NL123456789B01"
+  },
+  "currency": "EUR",
+  "subtotal": "1990.00",
+  "vat_amount": "417.90",
+  "total_amount": "2407.90",
+  "line_items": [
+    {
+      "description": "AI consultancy - architecture workshop",
+      "quantity": "2",
+      "unit_price": "450.00",
+      "vat_rate": "21",
+      "total": "900.00"
+    }
+  ]
+}
+```
+
+Monetary values are represented using `Decimal` in Python.
+
+---
+
+## Structured output
+
+Instead of asking the model to return arbitrary JSON, the application defines the expected structure using Pydantic models.
+
+```text
+Pydantic models
+      ↓
+JSON schema
+      ↓
+Gemini structured extraction
+      ↓
+Validated Python object
+```
+
+This creates a clear contract between the LLM and the rest of the application.
+
+Unexpected output formats can therefore be caught before they enter the rest of the processing pipeline.
+
+---
+
+## Database design
+
+The main persistent entities are:
+
+```text
+invoices
+    │
+    ├── invoice_line_items
+    │
+    └── invoice_corrections
+```
+
+### `invoices`
+
+Stores operational invoice information and the complete JSON extraction snapshot.
+
+Important fields include:
+
+```text
+invoice_number
+supplier_name
+customer_name
+invoice_date
+due_date
+currency
+subtotal
+vat_amount
+total_amount
+valid
+warnings
+invoice_data
+status
+duplicate_of_id
+approved_at
+paid_at
+```
+
+### `invoice_line_items`
+
+Stores normalized invoice lines:
+
+```text
+invoice_id
+description
+quantity
+unit_price
+vat_rate
+total
+```
+
+### `invoice_corrections`
+
+Stores the human-review audit trail:
+
+```text
+invoice_id
+field_name
+old_value
+new_value
+changed_by
+source
+changed_at
+```
+
+Database schema changes are managed using Alembic migrations.
+
+---
+
+## API
+
+FastAPI automatically exposes interactive documentation at:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+Main endpoints include:
+
+```text
+GET    /api/health
+
+POST   /api/invoices/extract
+
+GET    /api/invoices
+GET    /api/invoices/{invoice_id}
+
+PATCH  /api/invoices/{invoice_id}
+PATCH  /api/invoices/{invoice_id}/status
+
+GET    /api/invoices/{invoice_id}/line-items
+GET    /api/invoices/{invoice_id}/corrections
+
+GET    /api/line-items/counts
+
+GET    /api/analytics/summary
+```
+
+### Extract an invoice
+
+```http
+POST /api/invoices/extract
+```
+
+The endpoint accepts a PDF through `multipart/form-data`.
+
+The processing pipeline returns information such as:
+
+```json
+{
+  "filename": "test_invoice.pdf",
+  "extraction_method": "text",
+  "valid": true,
+  "warnings": [],
+  "database_id": 1,
+  "duplicate": false,
+  "duplicate_of_id": null
+}
+```
+
+### Correct an invoice
+
+```http
+PATCH /api/invoices/{invoice_id}
+```
+
+Example:
+
+```json
+{
+  "changed_by": "manual-review",
+  "supplier_name": "Corrected Supplier B.V."
+}
+```
+
+The invoice is updated, revalidated and the change is written to the correction history.
+
+---
+
+## Mock LLM mode
+
+Automated tests should not depend on:
+
+- external API availability
+- network latency
+- rate limits
+- Gemini usage limits
+
+The application therefore includes a deterministic mock extractor.
+
+Enable mock mode:
 
 ```env
-
-GEMINI\_API\_KEY=your\_api\_key\_here
-
-GEMINI\_MODEL=gemini-3.5-flash-lite
-
-USE\_MOCK\_LLM=true
-
+USE_MOCK_LLM=true
 ```
 
+Use the real Gemini extractor:
 
+```env
+USE_MOCK_LLM=false
+```
 
-The real `.env` file is ignored by Git and should never be committed.
+This keeps the regular test suite deterministic and free to run.
 
+---
 
+## Installation
 
-\---
+The project uses Python 3.11.
 
-
-
-\## Running the API locally
-
-
-
-Start FastAPI using Uvicorn:
-
-
+Clone the repository:
 
 ```bash
+git clone https://github.com/zwjulian/invoice-intelligence.git
+cd invoice-intelligence
+```
 
+Create a virtual environment:
+
+```bash
+python -m venv .venv
+```
+
+Activate it in Windows PowerShell:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\.venv\Scripts\Activate.ps1
+```
+
+Install dependencies:
+
+```powershell
+pip install -r requirements.txt
+```
+
+---
+
+## Environment configuration
+
+Create a `.env` file based on `.env.example`.
+
+Example:
+
+```env
+GEMINI_API_KEY=your_api_key_here
+GEMINI_MODEL=gemini-3.5-flash-lite
+USE_MOCK_LLM=false
+DATABASE_URL=your_database_url_here
+```
+
+The real `.env` file is ignored by Git and must not be committed.
+
+---
+
+## Database migrations
+
+The project uses Alembic for database schema migrations.
+
+Check the current migration:
+
+```powershell
+alembic current
+```
+
+Apply all migrations:
+
+```powershell
+alembic upgrade head
+```
+
+This allows database changes to be version-controlled together with application code.
+
+---
+
+## Running locally
+
+Start the application:
+
+```powershell
 uvicorn app.main:app --reload
-
 ```
-
-
-
-Open:
-
-
-
-```text
-
-http://127.0.0.1:8000/docs
-
-```
-
-
-
-FastAPI automatically provides an interactive Swagger interface.
-
-
-
-A PDF invoice can be uploaded directly from this page.
-
-
-
-\---
-
-
-
-\## API endpoints
-
-
-
-\### Health check
-
-
-
-```http
-
-GET /health
-
-```
-
-
-
-Example response:
-
-
-
-```json
-
-{
-
-&#x20; "status": "healthy",
-
-&#x20; "mock\_llm": true
-
-}
-
-```
-
-
-
-\### Extract invoice
-
-
-
-```http
-
-POST /invoices/extract
-
-```
-
-
-
-The request accepts an invoice PDF using `multipart/form-data`.
-
-
-
-Example response:
-
-
-
-```json
-
-{
-
-&#x20; "valid": true,
-
-&#x20; "warnings": \[],
-
-&#x20; "filename": "test\_invoice.pdf",
-
-&#x20; "invoice": {
-
-&#x20;   "invoice\_number": "INV-2026-0042",
-
-&#x20;   "invoice\_date": "2026-09-15",
-
-&#x20;   "due\_date": "2026-10-15",
-
-&#x20;   "currency": "EUR",
-
-&#x20;   "subtotal": "1990.00",
-
-&#x20;   "vat\_amount": "417.90",
-
-&#x20;   "total\_amount": "2407.90"
-
-&#x20; }
-
-}
-
-```
-
-
-
-Non-PDF files are rejected by the API.
-
-
-
-\---
-
-
-
-\## Automated tests
-
-
-
-Tests are implemented using `pytest`.
-
-
-
-Run:
-
-
-
-```bash
-
-pytest -v
-
-```
-
-
-
-Current result:
-
-
-
-```text
-
-8 passed
-
-```
-
-
-
-The test suite currently covers:
-
-
-
-\- successful invoice validation
-
-\- incorrect invoice totals
-
-\- incorrect subtotals
-
-\- invalid due dates
-
-\- monetary rounding tolerance
-
-\- API health endpoint
-
-\- successful invoice PDF upload
-
-\- rejection of unsupported file types
-
-
-
-The tests use mock mode, which means they do not depend on Gemini.
-
-
-
-This keeps them:
-
-
-
-\- deterministic
-
-\- fast
-
-\- free to run
-
-\- independent of external API availability
-
-
-
-\---
-
-
-
-\## Continuous integration
-
-
-
-GitHub Actions automatically runs the test suite after pushes and pull
-
-requests to the `main` branch.
-
-
-
-The CI pipeline performs:
-
-
-
-```text
-
-Checkout repository
-
-&#x20;       |
-
-&#x20;       v
-
-Install Python 3.11
-
-&#x20;       |
-
-&#x20;       v
-
-Install dependencies
-
-&#x20;       |
-
-&#x20;       v
-
-Run pytest
-
-&#x20;       |
-
-&#x20;       v
-
-Build Docker image
-
-```
-
-
-
-This ensures that both the Python application and Docker build remain valid
-
-after code changes.
-
-
-
-\---
-
-
-
-\## Docker
-
-
-
-The application can also run completely inside a Docker container.
-
-
-
-Build the image:
-
-
-
-```bash
-
-docker build -t invoice-intelligence .
-
-```
-
-
-
-Run:
-
-
-
-```bash
-
-docker run --env-file .env -p 8000:8000 invoice-intelligence
-
-```
-
-
 
 Then open:
 
-
-
 ```text
+Web interface:
+http://127.0.0.1:8000
 
+Invoices:
+http://127.0.0.1:8000/invoices
+
+Analytics:
+http://127.0.0.1:8000/analytics
+
+Swagger:
 http://127.0.0.1:8000/docs
-
 ```
 
+---
 
+## Automated tests
 
-The same FastAPI application is now running inside the Docker container.
+The project uses `pytest`.
 
+Run:
 
-
-Docker makes the application easier to reproduce across different
-
-environments because the Python runtime and dependencies are packaged with
-
-the application.
-
-
-
-\---
-
-
-
-\## LLM Evaluation
-
-
-
-The real Gemini extraction pipeline is evaluated separately from the
-
-deterministic unit and API tests.
-
-
-
-A small synthetic golden dataset currently contains \*\*5 invoices\*\* with known
-
-ground-truth values.
-
-
-
-Each generated invoice has a matching JSON ground-truth file.
-
-
-
-```text
-
-evaluation/
-
-├── invoices/
-
-│   ├── invoice\_001.pdf
-
-│   ├── invoice\_002.pdf
-
-│   ├── invoice\_003.pdf
-
-│   ├── invoice\_004.pdf
-
-│   └── invoice\_005.pdf
-
-│
-
-├── ground\_truth/
-
-│   ├── invoice\_001.json
-
-│   ├── invoice\_002.json
-
-│   ├── invoice\_003.json
-
-│   ├── invoice\_004.json
-
-│   └── invoice\_005.json
-
-│
-
-├── evaluate.py
-
-└── results.json
-
+```powershell
+pytest -v
 ```
 
-
-
-The evaluation pipeline performs:
-
-
+Current test suite:
 
 ```text
+21 tests passing
+```
 
+The tests cover areas including:
+
+- API health checks
+- PDF invoice extraction
+- rejection of invalid file formats
+- digital PDF processing
+- vision fallback
+- empty and invalid PDFs
+- invoice total validation
+- subtotal validation
+- due-date validation
+- rounding tolerance
+- line-item validation
+- mixed VAT invoices
+- VAT breakdown validation
+- VAT calculations
+- human invoice corrections
+- audit history
+- normalized line-item updates
+- workflow reset after correcting an approved invoice
+
+The test environment uses a dedicated temporary SQLite database.
+
+This prevents local tests and CI from modifying the real PostgreSQL database.
+
+---
+
+## Code quality
+
+Ruff is used for static checks and formatting rules.
+
+Run the same check used by CI:
+
+```powershell
+ruff check app tests evaluation scripts alembic
+```
+
+The project is kept lint-clean before changes are merged.
+
+---
+
+## Continuous integration
+
+GitHub Actions runs automatically after pushes and pull requests.
+
+The CI workflow checks the application using a clean environment.
+
+```text
+Checkout repository
+      ↓
+Install Python
+      ↓
+Install dependencies
+      ↓
+Ruff checks
+      ↓
+pytest
+      ↓
+Docker build
+```
+
+This helps ensure that the codebase remains reproducible outside the local development machine.
+
+---
+
+## Docker
+
+Build:
+
+```powershell
+docker build -t invoice-intelligence .
+```
+
+Run:
+
+```powershell
+docker run --env-file .env -p 8000:8000 invoice-intelligence
+```
+
+Open:
+
+```text
+http://127.0.0.1:8000
+```
+
+The same FastAPI application and web interface now run inside the container.
+
+---
+
+## Deployment
+
+The application is deployed using Render.
+
+The deployment uses the same application that is tested locally and through GitHub Actions.
+
+Production persistence uses PostgreSQL.
+
+The intended workflow is:
+
+```text
+local development
+      ↓
+pytest + Ruff
+      ↓
+Git commit
+      ↓
+GitHub Actions
+      ↓
+Render deployment
+      ↓
+PostgreSQL
+```
+
+---
+
+## LLM evaluation
+
+The Gemini extraction pipeline is evaluated separately from deterministic unit and API tests.
+
+The repository contains a synthetic golden dataset where each generated invoice has corresponding known ground-truth values.
+
+The evaluation pipeline is:
+
+```text
 Known invoice PDF
-
-&#x20;      |
-
-&#x20;      v
-
-PDF text extraction
-
-&#x20;      |
-
-&#x20;      v
-
+      ↓
+Document processing
+      ↓
 Real Gemini extraction
-
-&#x20;      |
-
-&#x20;      v
-
-Predicted Invoice
-
-&#x20;      |
-
-&#x20;      v
-
+      ↓
+Predicted structured invoice
+      ↓
 Compare with ground truth
-
-&#x20;      |
-
-&#x20;      v
-
-Field-level accuracy
-
+      ↓
+Field-level evaluation
 ```
 
+Run the benchmark with:
 
-
-The current evaluation compares 11 fields per invoice.
-
-
-
-\### Current results
-
-
-
-| Field | Correct | Accuracy |
-
-|---|---:|---:|
-
-| Invoice number | 5/5 | 100% |
-
-| Invoice date | 5/5 | 100% |
-
-| Due date | 5/5 | 100% |
-
-| Currency | 5/5 | 100% |
-
-| Subtotal | 5/5 | 100% |
-
-| VAT amount | 5/5 | 100% |
-
-| Total amount | 5/5 | 100% |
-
-| Supplier name | 5/5 | 100% |
-
-| Supplier VAT number | 5/5 | 100% |
-
-| Customer name | 5/5 | 100% |
-
-| Customer VAT number | 5/5 | 100% |
-
-
-
-\*\*Overall result: 55/55 evaluated fields correct (100%).\*\*
-
-
-
-The benchmark can be reproduced using:
-
-
-
-```bash
-
+```powershell
 python -m evaluation.evaluate
-
 ```
 
-
-
-Detailed results are written to:
-
-
+Detailed output is stored in:
 
 ```text
-
 evaluation/results.json
-
 ```
 
+The evaluation dataset is intentionally small and synthetic.
 
+Results should therefore be interpreted as a regression and sanity-check benchmark, not as a claim of equivalent accuracy on arbitrary real-world invoices.
 
-The evaluation uses the real Gemini extractor and is therefore intentionally
+---
 
-kept separate from the deterministic CI test suite.
-
-
-
-\### Interpreting the result
-
-
-
-The current 100% score should be interpreted as a \*\*sanity-check benchmark\*\*,
-
-not as a claim that the system achieves 100% accuracy on arbitrary real-world
-
-invoices.
-
-
-
-The current evaluation dataset is:
-
-
-
-\- small
-
-\- synthetic
-
-\- relatively clean
-
-\- limited in layout variation
-
-
-
-A larger and more diverse benchmark would be required to estimate real-world
-
-performance.
-
-
-
-\---
-
-
-
-\## Project structure
-
-
+## Project structure
 
 ```text
-
 invoice-intelligence/
-
 │
-
 ├── app/
-
 │   ├── core/
-
-│   │   └── config.py
-
-│   │
-
 │   ├── models/
-
-│   │   └── invoice.py
-
-│   │
-
 │   ├── services/
-
-│   │   ├── llm\_service.py
-
-│   │   ├── mock\_llm\_service.py
-
-│   │   ├── pdf\_service.py
-
-│   │   └── validation\_service.py
-
-│   │
-
+│   ├── static/
+│   ├── database.py
+│   ├── db_models.py
 │   └── main.py
-
 │
-
+├── alembic/
+│   └── versions/
+│
 ├── evaluation/
-
-│   ├── ground\_truth/
-
+│   ├── ground_truth/
 │   ├── invoices/
-
 │   ├── evaluate.py
-
 │   └── results.json
-
 │
-
 ├── scripts/
-
-│   └── generate\_evaluation\_data.py
-
 │
-
-├── sample\_data/
-
-│   └── test\_invoice.pdf
-
+├── sample_data/
 │
-
 ├── tests/
-
-│   ├── test\_api.py
-
-│   └── test\_validation.py
-
 │
-
 ├── .github/
-
 │   └── workflows/
-
-│       └── tests.yml
-
 │
-
-├── .dockerignore
-
-├── .env.example
-
-├── .gitignore
-
 ├── Dockerfile
-
-├── README.md
-
+├── alembic.ini
 ├── requirements.txt
-
-└── run\_extraction.py
-
+├── run_extraction.py
+└── README.md
 ```
 
+---
 
+## Reliability choices
 
-\---
+Several design decisions intentionally separate AI behaviour from deterministic application logic.
 
+### LLM for interpretation
 
+Gemini handles tasks that require understanding unstructured invoice documents.
 
-\## Limitations
+### Pydantic for contracts
 
+Pydantic ensures extracted data follows an expected structure.
 
+### Python for business rules
 
-The current PDF extraction approach works best for digitally generated PDF
+Financial consistency is checked using deterministic code rather than asking the LLM whether its own answer is correct.
 
-files that contain embedded text.
+### PostgreSQL for operational data
 
+Persistent invoice information, normalized line items and audit history are stored in relational tables.
 
+### Human review for corrections
 
-Scanned documents may not contain machine-readable text and may therefore
+Users can correct extraction errors without losing the original processing history.
 
-require:
+### Mock extraction for CI
 
+Automated tests do not require live Gemini calls.
 
+This keeps the core application testable even when external AI services are unavailable.
 
-\- OCR
+---
 
-\- multimodal document understanding
+## Current limitations
 
-\- vision-language models
+The system is still a portfolio / demonstration project rather than a complete accounting platform.
 
+Important limitations include:
 
+- the evaluation dataset is small and synthetic
+- invoice layout diversity is limited
+- there is currently no user authentication or authorization
+- background job processing is not implemented
+- extraction confidence is not yet exposed per field
+- real-world invoice accuracy has not been established on a large independent benchmark
+- external Gemini availability and rate limits can still affect live extraction
 
-The current evaluation dataset is also still small and synthetic.
+---
 
+## Possible future improvements
 
-
-External LLM availability can vary. The Gemini API may experience latency,
-
-rate limits or temporary service availability issues.
-
-
-
-For this reason, deterministic mock mode is used during development and CI.
-
-
-
-\---
-
-
-
-\## Possible future improvements
-
-
-
-\### Document processing
-
-
-
-\- OCR fallback for scanned invoices
-
-\- multimodal PDF processing
-
-\- support for image-based invoices
-
-\- improved handling of complex PDF layouts
-
-
-
-\### Evaluation
-
-
-
-\- larger golden dataset
-
-\- more realistic invoice layouts
-
-\- missing-field test cases
-
-\- multiple currencies
-
-\- line-item-level evaluation
-
-\- intentionally noisy PDF extraction
-
-\- field precision / recall metrics
-
-
-
-\### Application
-
-
-
-\- PostgreSQL persistence
-
-\- invoice search
-
-\- batch processing
-
-\- frontend interface
-
-\- authentication
-
-\- background processing
-
-
-
-\### LLM engineering
-
-
-
-\- extraction confidence scores
-
-\- model comparison
-
-\- prompt versioning
-
-\- fallback LLM providers
-
-\- observability and tracing
-
-\- cost and latency monitoring
-
-
-
-\### Retrieval
-
-
-
-A future version could store processed invoices and support semantic
-
-questions across a collection of documents using retrieval-augmented
-
-generation (RAG).
-
-
-
-Structured questions such as exact totals would remain suitable for SQL,
-
-while semantic document questions could use vector search.
-
-
-
-\---
-
-
-
-\## Main technologies
-
-
-
-\- Python 3.11
-
-\- FastAPI
-
-\- Pydantic
-
-\- Google Gemini
-
-\- PyMuPDF
-
-\- pytest
-
-\- Docker
-
-\- GitHub Actions
-
-
-
-\---
-
-
-
-\## Goal of the project
-
-
-
-The goal of this project is not only to demonstrate an LLM call.
-
-
-
-It explores how an LLM can be integrated into a more complete software
-
-system:
-
-
+Potential extensions include:
 
 ```text
-
-unstructured document
-
-&#x20;       |
-
-&#x20;       v
-
-LLM extraction
-
-&#x20;       |
-
-&#x20;       v
-
-typed structured data
-
-&#x20;       |
-
-&#x20;       v
-
-deterministic validation
-
-&#x20;       |
-
-&#x20;       v
-
-REST API
-
-&#x20;       |
-
-&#x20;       v
-
-automated testing
-
-&#x20;       |
-
-&#x20;       v
-
-Docker
-
-&#x20;       |
-
-&#x20;       v
-
-CI
-
-&#x20;       |
-
-&#x20;       v
-
-quantitative LLM evaluation
-
+Field-level extraction confidence
+Batch invoice processing
+Authentication and user roles
+Background processing / queues
+Prompt versioning
+Model comparison
+LLM observability and tracing
+Latency and cost monitoring
+Larger real-world evaluation datasets
+Line-item-level evaluation metrics
+Semantic search across stored documents
 ```
 
+Structured financial questions remain better suited to SQL, while semantic questions across documents could later use retrieval or vector search.
 
+---
 
-The focus is therefore on combining AI functionality with software
+## Main technologies
 
-engineering, reliability and evaluation.
+```text
+Python 3.11
+FastAPI
+Pydantic
+SQLAlchemy
+PostgreSQL
+Alembic
+Google Gemini
+PyMuPDF
+HTML / CSS / JavaScript
+pytest
+Ruff
+Docker
+GitHub Actions
+Render
+```
 
+---
+
+## Project goal
+
+The project demonstrates how an LLM can be embedded in a larger production-oriented workflow:
+
+```text
+unstructured document
+        ↓
+AI extraction
+        ↓
+typed structured data
+        ↓
+deterministic validation
+        ↓
+persistent relational storage
+        ↓
+human review
+        ↓
+audit trail
+        ↓
+workflow management
+        ↓
+analytics
+        ↓
+testing and CI
+        ↓
+deployment
+```
+
+The focus is therefore not only on AI extraction, but on the software-engineering components needed to make AI output usable, reviewable and maintainable.
